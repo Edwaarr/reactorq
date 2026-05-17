@@ -7,66 +7,51 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='8' fill='%231a1208'/><text y='.9em' font-size='78' x='12' fill='%23c84b1f' font-family='Georgia,serif' font-weight='900'>Q</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --bg: #f5f0e8;
-    --bg2: #ede7d9;
-    --ink: #1a1208;
-    --ink2: #5a4e3a;
-    --ink3: #9c8e78;
-    --accent: #c84b1f;
-    --accent2: #e8a020;
-    --green: #2d6a4f;
-    --green-light: #d8f3dc;
-    --red-light: #fde8e0;
-    --card: #ffffff;
-    --border: #d4c9b4;
-    --shadow: rgba(26,18,8,0.08);
+    --bg: #f5f0e8; --bg2: #ede7d9; --ink: #1a1208; --ink2: #5a4e3a; --ink3: #9c8e78;
+    --accent: #c84b1f; --accent2: #e8a020; --green: #2d6a4f;
+    --green-light: #d8f3dc; --red-light: #fde8e0; --card: #ffffff; --border: #d4c9b4;
   }
-
   html { font-size: 16px; }
   body {
-    background: var(--bg);
-    color: var(--ink);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    background-image: 
-      radial-gradient(circle at 20% 20%, rgba(200,75,31,0.06) 0%, transparent 50%),
+    background: var(--bg); color: var(--ink); font-family: 'DM Sans', sans-serif;
+    min-height: 100vh; overflow-x: hidden;
+    background-image: radial-gradient(circle at 20% 20%, rgba(200,75,31,0.06) 0%, transparent 50%),
       radial-gradient(circle at 80% 80%, rgba(45,106,79,0.06) 0%, transparent 50%);
   }
-
-  /* NOISE TEXTURE OVERLAY */
   body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
+    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 0;
   }
-
   .wrapper { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
 
-  /* HEADER */
-  header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 3rem; padding-bottom: 1.5rem; border-bottom: 2px solid var(--ink); }
+  header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 3rem; padding-bottom: 1.5rem; border-bottom: 2px solid var(--ink);
+    opacity: 0;
+  }
   .logo { display: flex; flex-direction: column; }
-  .logo-name { font-family: 'Fraunces', serif; font-size: 2.4rem; font-weight: 900; color: var(--ink); letter-spacing: -2px; line-height: 1; }
+  .logo-name { font-family: 'Fraunces', serif; font-size: 2.4rem; font-weight: 900; color: var(--ink); letter-spacing: -2px; line-height: 1; overflow: hidden; }
+  .logo-name .char { display: inline-block; }
   .logo-name span { color: var(--accent); }
-  .logo-sub { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 3px; color: var(--ink3); text-transform: uppercase; margin-top: 4px; }
-  .header-score { text-align: right; }
+  .logo-sub { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 3px; color: var(--ink3); text-transform: uppercase; margin-top: 4px; opacity: 0; }
+  .logo-byline { font-family: 'Fraunces', serif; font-size: 0.7rem; color: var(--ink3); margin-top: 2px; letter-spacing: 0.5px; opacity: 0; }
+  .header-score { text-align: right; opacity: 0; }
   .score-label { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase; color: var(--ink3); }
   .score-val { font-family: 'Fraunces', serif; font-size: 2rem; font-weight: 700; color: var(--ink); line-height: 1; }
 
-  /* PROGRESS */
   .progress-row { display: flex; gap: 6px; margin-bottom: 2rem; }
   .prog-dot { flex: 1; height: 4px; background: var(--border); border-radius: 2px; transition: background 0.4s; }
   .prog-dot.done { background: var(--green); }
   .prog-dot.active { background: var(--accent); }
 
-  /* EQUATION DISPLAY */
-  .eq-container { background: var(--card); border: 1.5px solid var(--ink); border-radius: 0; padding: 2rem; margin-bottom: 1.5rem; position: relative; overflow: hidden; }
+  .eq-container {
+    background: var(--card); border: 1.5px solid var(--ink); padding: 2rem;
+    margin-bottom: 1.5rem; position: relative; overflow: hidden; opacity: 0;
+  }
   .eq-container::before { content: ''; position: absolute; top: 0; left: 0; width: 5px; height: 100%; background: var(--accent); }
   .eq-label { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 3px; text-transform: uppercase; color: var(--ink3); margin-bottom: 1rem; padding-left: 1rem; }
   .eq-context { font-size: 0.9rem; color: var(--ink2); padding-left: 1rem; margin-bottom: 1.5rem; line-height: 1.6; }
@@ -75,20 +60,11 @@
   .equation-row { display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-wrap: wrap; padding: 1rem; }
   .eq-part { display: flex; align-items: center; gap: 0.4rem; }
   .coef-input {
-    width: 52px; height: 52px;
-    border: 2px solid var(--border);
-    border-radius: 0;
-    background: var(--bg);
-    font-family: 'Fraunces', serif;
-    font-size: 1.4rem;
-    font-weight: 700;
-    text-align: center;
-    color: var(--ink);
-    transition: border-color 0.2s, background 0.2s;
-    -moz-appearance: textfield;
+    width: 52px; height: 52px; border: 2px solid var(--border); background: var(--bg);
+    font-family: 'Fraunces', serif; font-size: 1.4rem; font-weight: 700; text-align: center;
+    color: var(--ink); transition: border-color 0.2s, background 0.2s; -moz-appearance: textfield;
   }
-  .coef-input::-webkit-outer-spin-button,
-  .coef-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .coef-input::-webkit-outer-spin-button, .coef-input::-webkit-inner-spin-button { -webkit-appearance: none; }
   .coef-input:focus { outline: none; border-color: var(--accent); background: #fff; }
   .coef-input.correct { border-color: var(--green); background: var(--green-light); color: var(--green); }
   .coef-input.wrong { border-color: var(--accent); background: var(--red-light); color: var(--accent); }
@@ -96,31 +72,24 @@
 
   .molecule { font-family: 'DM Mono', monospace; font-size: 1.1rem; font-weight: 500; color: var(--ink); }
   .molecule sub { font-size: 0.65em; vertical-align: sub; }
-  .molecule sup { font-size: 0.6em; vertical-align: super; color: var(--ink2); }
   .eq-plus { font-family: 'Fraunces', serif; font-size: 1.5rem; color: var(--ink3); padding: 0 0.2rem; }
   .eq-arrow { font-size: 1.4rem; color: var(--accent); padding: 0 0.6rem; font-weight: 700; }
 
-  /* ATOM COUNTER */
   .atom-counter { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.5rem; padding: 0 1rem 1rem; }
   .atom-card { background: var(--bg2); padding: 0.5rem 0.75rem; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
   .atom-symbol { font-family: 'DM Mono', monospace; font-size: 0.8rem; color: var(--ink2); }
   .atom-counts { display: flex; gap: 0.5rem; align-items: center; }
   .atom-side { font-family: 'Fraunces', serif; font-size: 0.9rem; font-weight: 700; }
-  .atom-side.left { color: var(--ink); }
-  .atom-side.right { color: var(--ink); }
   .atom-divider { color: var(--ink3); font-size: 0.8rem; }
   .atom-card.balanced .atom-side { color: var(--green); }
-  .atom-card.unbalanced .atom-side.left, .atom-card.unbalanced .atom-side.right { color: var(--accent); }
+  .atom-card.unbalanced .atom-side { color: var(--accent); }
 
-  /* HINT */
-  .hint-box { background: #fef9ed; border: 1px solid var(--accent2); padding: 1rem 1.25rem; margin: 0 0 1.5rem; font-size: 0.9rem; color: #6b4a00; line-height: 1.6; display: none; }
+  .hint-box { background: #fef9ed; border: 1px solid var(--accent2); padding: 1rem 1.25rem; margin: 0 0 1.5rem; font-size: 0.9rem; color: #6b4a00; line-height: 1.6; display: none; transform-origin: top; }
   .hint-box.show { display: block; }
   .hint-box strong { color: #3d2a00; }
 
-  /* CONTROLS */
   .controls { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 2rem; }
-  .btn { font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.9rem; padding: 0.7rem 1.5rem; border: 1.5px solid var(--ink); border-radius: 0; cursor: pointer; transition: transform 0.1s, background 0.2s; letter-spacing: 0.3px; }
-  .btn:active { transform: scale(0.97); }
+  .btn { font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.9rem; padding: 0.7rem 1.5rem; border: 1.5px solid var(--ink); cursor: pointer; letter-spacing: 0.3px; transition: background 0.2s; }
   .btn-check { background: var(--ink); color: var(--bg); }
   .btn-check:hover { background: #2d1f08; }
   .btn-hint { background: transparent; color: var(--ink); }
@@ -130,66 +99,68 @@
   .btn-reset { background: transparent; color: var(--ink3); border-color: var(--border); font-size: 0.8rem; padding: 0.7rem 1rem; }
   .btn-reset:hover { border-color: var(--ink); color: var(--ink); }
 
-  /* FEEDBACK */
-  .feedback { padding: 1rem 1.25rem; margin-bottom: 1.5rem; font-size: 0.9rem; line-height: 1.7; display: none; border-left: 4px solid; }
+  .feedback { padding: 1rem 1.25rem; margin-bottom: 1.5rem; font-size: 0.9rem; line-height: 1.7; display: none; border-left: 4px solid; opacity: 0; }
   .feedback.show { display: block; }
   .feedback.ok { background: var(--green-light); border-color: var(--green); color: #1a4a30; }
   .feedback.fail { background: var(--red-light); border-color: var(--accent); color: #6b1a0a; }
   .feedback .eq-balanced { font-family: 'DM Mono', monospace; font-size: 0.85rem; background: rgba(255,255,255,0.6); padding: 0.4rem 0.75rem; margin-top: 0.5rem; display: inline-block; }
 
-  /* RESULT SCREEN */
-  #result-screen { display: none; text-align: center; padding: 3rem 1rem; }
-  #result-screen.show { display: block; }
-  .result-big { font-family: 'Fraunces', serif; font-size: 5rem; font-weight: 900; color: var(--ink); letter-spacing: -4px; line-height: 1; margin-bottom: 0.5rem; }
-  .result-big span { color: var(--accent); }
-  .result-tagline { font-family: 'DM Mono', monospace; font-size: 0.75rem; letter-spacing: 3px; text-transform: uppercase; color: var(--ink3); margin-bottom: 2rem; }
-  .result-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; max-width: 500px; margin: 0 auto 2rem; }
-  .r-card { background: var(--card); border: 1.5px solid var(--ink); padding: 1.25rem; }
-  .r-card-val { font-family: 'Fraunces', serif; font-size: 2.2rem; font-weight: 700; color: var(--ink); }
-  .r-card-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 2px; text-transform: uppercase; color: var(--ink3); margin-top: 4px; }
-  .result-msg { font-size: 1rem; color: var(--ink2); max-width: 480px; margin: 0 auto 2rem; line-height: 1.7; }
-  .btn-restart { font-family: 'Fraunces', serif; font-size: 1.1rem; font-weight: 700; background: var(--ink); color: var(--bg); border: none; padding: 1rem 3rem; cursor: pointer; letter-spacing: -0.5px; transition: background 0.2s; }
-  .btn-restart:hover { background: var(--accent); }
-
   /* INTRO */
   #intro-screen { text-align: center; padding: 3rem 1rem; }
   .intro-headline { font-family: 'Fraunces', serif; font-size: 3rem; font-weight: 900; color: var(--ink); letter-spacing: -2px; line-height: 1.1; margin-bottom: 1rem; }
+  .intro-headline .word { display: inline-block; overflow: hidden; }
+  .intro-headline .word-inner { display: inline-block; }
   .intro-headline em { font-style: italic; color: var(--accent); }
-  .intro-desc { font-size: 1rem; color: var(--ink2); max-width: 480px; margin: 0 auto 1.5rem; line-height: 1.7; }
-  .intro-rules { background: var(--card); border: 1.5px solid var(--ink); padding: 1.5rem; max-width: 480px; margin: 0 auto 2rem; text-align: left; }
+  .intro-desc { font-size: 1rem; color: var(--ink2); max-width: 480px; margin: 0 auto 1.5rem; line-height: 1.7; opacity: 0; }
+  .badge-row { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2rem; }
+  .badge { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; padding: 0.3rem 0.75rem; border: 1px solid var(--border); color: var(--ink3); text-transform: uppercase; opacity: 0; transform: translateY(8px); }
+  .intro-rules { background: var(--card); border: 1.5px solid var(--ink); padding: 1.5rem; max-width: 480px; margin: 0 auto 2rem; text-align: left; opacity: 0; }
   .intro-rules h3 { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 3px; text-transform: uppercase; color: var(--ink3); margin-bottom: 1rem; }
   .rule { display: flex; gap: 0.75rem; align-items: flex-start; margin-bottom: 0.75rem; font-size: 0.9rem; color: var(--ink2); line-height: 1.5; }
   .rule-num { font-family: 'Fraunces', serif; font-weight: 700; color: var(--accent); font-size: 1.1rem; flex-shrink: 0; }
-  .badge-row { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2rem; }
-  .badge { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; padding: 0.3rem 0.75rem; border: 1px solid var(--border); color: var(--ink3); text-transform: uppercase; }
+  #btn-start { opacity: 0; transform: translateY(10px); font-size: 1rem; padding: 0.9rem 2.5rem; }
 
-  /* ANIM */
-  @keyframes fadeUp { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform: translateY(0); } }
-  .fadein { animation: fadeUp 0.4s ease forwards; }
-  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+  /* RESULT */
+  #result-screen { display: none; text-align: center; padding: 3rem 1rem; }
+  #result-screen.show { display: block; }
+  .result-big { font-family: 'Fraunces', serif; font-size: 5rem; font-weight: 900; color: var(--ink); letter-spacing: -4px; line-height: 1; margin-bottom: 0.5rem; opacity: 0; }
+  .result-big span { color: var(--accent); }
+  .result-tagline { font-family: 'DM Mono', monospace; font-size: 0.75rem; letter-spacing: 3px; text-transform: uppercase; color: var(--ink3); margin-bottom: 2rem; opacity: 0; }
+  .result-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; max-width: 500px; margin: 0 auto 2rem; }
+  .r-card { background: var(--card); border: 1.5px solid var(--ink); padding: 1.25rem; opacity: 0; transform: translateY(20px); }
+  .r-card-val { font-family: 'Fraunces', serif; font-size: 2.2rem; font-weight: 700; color: var(--ink); }
+  .r-card-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 2px; text-transform: uppercase; color: var(--ink3); margin-top: 4px; }
+  .result-msg { font-size: 1rem; color: var(--ink2); max-width: 480px; margin: 0 auto 2rem; line-height: 1.7; opacity: 0; }
+  .btn-restart { font-family: 'Fraunces', serif; font-size: 1.1rem; font-weight: 700; background: var(--ink); color: var(--bg); border: none; padding: 1rem 3rem; cursor: pointer; letter-spacing: -0.5px; transition: background 0.2s; opacity: 0; }
+  .btn-restart:hover { background: var(--accent); }
+
+  /* PARTICLES */
+  .particle { position: fixed; pointer-events: none; font-size: 1rem; z-index: 999; }
+
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
   .shake { animation: shake 0.35s ease; }
-  @keyframes pulse-green { 0%,100%{box-shadow:0 0 0 0 rgba(45,106,79,0)} 50%{box-shadow:0 0 0 6px rgba(45,106,79,0.2)} }
-  .pulse { animation: pulse-green 0.6s ease; }
 </style>
 </head>
 <body>
 <div class="wrapper">
-
-  <header>
+  <header id="main-header">
     <div class="logo">
-      <div class="logo-name">Reactor<span>Q</span></div>
-      <div style="font-family:'Fraunces',serif; font-size:0.7rem; color:var(--ink3); margin-top:2px; letter-spacing:0.5px;">by @edwaarr</div>
-      <div class="logo-sub" style="margin-top:4px;">Balanceador · Química Basica UIS · Prof. Maria Mercedes Gonzalez Bernal</div>
+      <div class="logo-name" id="logo-name">Reactor<span>Q</span></div>
+      <div class="logo-byline" id="logo-byline">by @edwaar</div>
+      <div class="logo-sub" id="logo-sub">Balanceador · Química UIS · Prof. María Mercedes González Bernal</div>
     </div>
-    <div class="header-score">
+    <div class="header-score" id="header-score">
       <div class="score-label">Puntuación</div>
       <div class="score-val" id="score-display">0</div>
     </div>
   </header>
 
-  <!-- INTRO -->
   <div id="intro-screen">
-    <div class="intro-headline">Balancea.<br><em>Reacciona.</em><br>Domina.</div>
+    <div class="intro-headline">
+      <div class="word"><span class="word-inner">Balancea.</span></div><br>
+      <div class="word"><em class="word-inner">Reacciona.</em></div><br>
+      <div class="word"><span class="word-inner">Domina.</span></div>
+    </div>
     <p class="intro-desc">6 ecuaciones químicas de redox y ácido-base. Ingresa los coeficientes correctos para que el número de átomos sea igual en ambos lados.</p>
     <div class="badge-row">
       <span class="badge">Redox</span>
@@ -197,30 +168,26 @@
       <span class="badge">Neutralización</span>
       <span class="badge">Óxido-Reducción</span>
     </div>
-    <div class="intro-rules">
+    <div class="intro-rules" id="intro-rules">
       <h3>Cómo jugar</h3>
       <div class="rule"><span class="rule-num">1</span><span>Observa la ecuación química y el conteo de átomos en tiempo real.</span></div>
       <div class="rule"><span class="rule-num">2</span><span>Escribe los coeficientes en las casillas blancas. Deja vacío o escribe 1 si el coeficiente es 1.</span></div>
       <div class="rule"><span class="rule-num">3</span><span>Presiona <strong>Verificar</strong> cuando creas que está balanceada. Tienes una pista disponible por ecuación.</span></div>
       <div class="rule"><span class="rule-num">4</span><span>Acierto al primer intento = 100 pts. Con pista = 60 pts. Segundo intento = 40 pts.</span></div>
     </div>
-    <button class="btn btn-check" onclick="startGame()" style="font-size:1rem; padding: 0.9rem 2.5rem;">Comenzar →</button>
+    <button class="btn btn-check" id="btn-start" onclick="startGame()">Comenzar →</button>
   </div>
 
-  <!-- GAME -->
   <div id="game-screen" style="display:none">
     <div class="progress-row" id="progress-row"></div>
-
-    <div class="eq-container fadein" id="eq-container">
-      <div class="eq-label" id="eq-label">Ecuación 1 · Redox</div>
+    <div class="eq-container" id="eq-container">
+      <div class="eq-label" id="eq-label"></div>
       <div class="eq-context" id="eq-context"></div>
       <div class="equation-row" id="equation-row"></div>
       <div class="atom-counter" id="atom-counter"></div>
     </div>
-
     <div class="hint-box" id="hint-box"></div>
     <div class="feedback" id="feedback"></div>
-
     <div class="controls">
       <button class="btn btn-check" id="btn-check" onclick="checkAnswer()">Verificar</button>
       <button class="btn btn-hint" id="btn-hint" onclick="showHint()">💡 Pista</button>
@@ -229,19 +196,17 @@
     </div>
   </div>
 
-  <!-- RESULT -->
   <div id="result-screen">
-    <div class="result-big" id="r-big">¡<span>Bien</span>!</div>
-    <div class="result-tagline" id="r-tagline">Resultado final</div>
+    <div class="result-big" id="r-big"></div>
+    <div class="result-tagline" id="r-tagline"></div>
     <div class="result-grid">
-      <div class="r-card"><div class="r-card-val" id="r-score">0</div><div class="r-card-label">Puntos</div></div>
-      <div class="r-card"><div class="r-card-val" id="r-correct">0/6</div><div class="r-card-label">Correctas</div></div>
-      <div class="r-card"><div class="r-card-val" id="r-hints">0</div><div class="r-card-label">Pistas usadas</div></div>
+      <div class="r-card" id="rc-1"><div class="r-card-val" id="r-score">0</div><div class="r-card-label">Puntos</div></div>
+      <div class="r-card" id="rc-2"><div class="r-card-val" id="r-correct">0/6</div><div class="r-card-label">Correctas</div></div>
+      <div class="r-card" id="rc-3"><div class="r-card-val" id="r-hints">0</div><div class="r-card-label">Pistas usadas</div></div>
     </div>
     <p class="result-msg" id="r-msg"></p>
-    <button class="btn-restart" onclick="restartGame()">Jugar de nuevo</button>
+    <button class="btn-restart" id="btn-restart" onclick="restartGame()">Jugar de nuevo</button>
   </div>
-
 </div>
 
 <script>
@@ -249,345 +214,366 @@ const EQUATIONS = [
   {
     label: "Ecuación 1 · Neutralización ácido-base",
     context: "El ácido clorhídrico reacciona con el hidróxido de sodio en una reacción de <strong>neutralización</strong>. Cada mol de HCl reacciona con exactamente un mol de NaOH para producir agua y sal.",
-    reactants: [
-      { coef: 1, formula: "HCl", atoms: {H:1, Cl:1} },
-      { coef: 1, formula: "NaOH", atoms: {Na:1, O:1, H:1} }
-    ],
-    products: [
-      { coef: 1, formula: "NaCl", atoms: {Na:1, Cl:1} },
-      { coef: 1, formula: "H₂O", atoms: {H:2, O:1} }
-    ],
+    reactants: [{ coef:1, formula:"HCl", atoms:{H:1,Cl:1} }, { coef:1, formula:"NaOH", atoms:{Na:1,O:1,H:1} }],
+    products:  [{ coef:1, formula:"NaCl", atoms:{Na:1,Cl:1} }, { coef:1, formula:"H₂O", atoms:{H:2,O:1} }],
     hint: "Cuenta los átomos de H: en los reactivos tienes 1 (del HCl) + 1 (del NaOH) = 2. En los productos hay 2 H en el H₂O. Todos los coeficientes son 1.",
-    displayReactants: ["HCl", "NaOH"],
-    displayProducts: ["NaCl", "H<sub>2</sub>O"]
+    displayReactants: ["HCl","NaOH"], displayProducts: ["NaCl","H<sub>2</sub>O"]
   },
   {
     label: "Ecuación 2 · Ácido sulfúrico + hidróxido",
     context: "El ácido sulfúrico (diprótido) reacciona con el hidróxido de sodio. Como H₂SO₄ tiene <strong>2 protones</strong> para ceder, necesita el doble de NaOH para neutralizarse completamente.",
-    reactants: [
-      { coef: 1, formula: "H2SO4", atoms: {H:2, S:1, O:4} },
-      { coef: 2, formula: "NaOH", atoms: {Na:1, O:1, H:1} }
-    ],
-    products: [
-      { coef: 1, formula: "Na2SO4", atoms: {Na:2, S:1, O:4} },
-      { coef: 2, formula: "H2O", atoms: {H:2, O:1} }
-    ],
+    reactants: [{ coef:1, formula:"H2SO4", atoms:{H:2,S:1,O:4} }, { coef:2, formula:"NaOH", atoms:{Na:1,O:1,H:1} }],
+    products:  [{ coef:1, formula:"Na2SO4", atoms:{Na:2,S:1,O:4} }, { coef:2, formula:"H2O", atoms:{H:2,O:1} }],
     hint: "El H₂SO₄ tiene 2 hidrógenos ácidos. Necesitas 2 NaOH para neutralizarlos. Productos: 1 Na₂SO₄ y 2 H₂O.",
-    displayReactants: ["H<sub>2</sub>SO<sub>4</sub>", "NaOH"],
-    displayProducts: ["Na<sub>2</sub>SO<sub>4</sub>", "H<sub>2</sub>O"]
+    displayReactants: ["H<sub>2</sub>SO<sub>4</sub>","NaOH"], displayProducts: ["Na<sub>2</sub>SO<sub>4</sub>","H<sub>2</sub>O"]
   },
   {
     label: "Ecuación 3 · Oxidación del hierro (herrumbre)",
     context: "La corrosión del hierro es una reacción de <strong>oxidación-reducción</strong>: el Fe se oxida (pierde electrones) y el O₂ se reduce (gana electrones). El resultado es el óxido de hierro III.",
-    reactants: [
-      { coef: 4, formula: "Fe", atoms: {Fe:1} },
-      { coef: 3, formula: "O2", atoms: {O:2} }
-    ],
-    products: [
-      { coef: 2, formula: "Fe2O3", atoms: {Fe:2, O:3} }
-    ],
-    hint: "Cada Fe pierde 3e⁻ (→Fe³⁺), cada O₂ gana 4e⁻ total. Para balancear electrones: 4 Fe y 3 O₂ → 2 Fe₂O₃. Verifica: 4 Fe = 4 Fe ✓, 6 O = 6 O ✓",
-    displayReactants: ["Fe", "O<sub>2</sub>"],
-    displayProducts: ["Fe<sub>2</sub>O<sub>3</sub>"]
+    reactants: [{ coef:4, formula:"Fe", atoms:{Fe:1} }, { coef:3, formula:"O2", atoms:{O:2} }],
+    products:  [{ coef:2, formula:"Fe2O3", atoms:{Fe:2,O:3} }],
+    hint: "Cada Fe pierde 3e⁻ (→Fe³⁺), cada O₂ gana 4e⁻ total. Para balancear electrones: 4 Fe y 3 O₂ → 2 Fe₂O₃.",
+    displayReactants: ["Fe","O<sub>2</sub>"], displayProducts: ["Fe<sub>2</sub>O<sub>3</sub>"]
   },
   {
     label: "Ecuación 4 · Reducción del permanganato (redox)",
-    context: "En medio ácido, el permanganato de potasio (KMnO₄) oxida al ácido clorhídrico. El Mn reduce su número de oxidación de <strong>+7 a +2</strong>. Es una de las reacciones redox más importantes del laboratorio.",
-    reactants: [
-      { coef: 2, formula: "KMnO4", atoms: {K:1, Mn:1, O:4} },
-      { coef: 16, formula: "HCl", atoms: {H:1, Cl:1} }
-    ],
-    products: [
-      { coef: 2, formula: "KCl", atoms: {K:1, Cl:1} },
-      { coef: 2, formula: "MnCl2", atoms: {Mn:1, Cl:2} },
-      { coef: 5, formula: "Cl2", atoms: {Cl:2} },
-      { coef: 8, formula: "H2O", atoms: {H:2, O:1} }
-    ],
-    hint: "Esta es la más difícil. Coeficientes: 2 KMnO₄ + 16 HCl → 2 KCl + 2 MnCl₂ + 5 Cl₂ + 8 H₂O. El Mn pasa de +7 a +2 (gana 5e⁻ × 2 = 10e⁻). El Cl⁻ pasa de -1 a 0 en Cl₂ (pierde 1e⁻ × 10 = 10e⁻).",
-    displayReactants: ["KMnO<sub>4</sub>", "HCl"],
-    displayProducts: ["KCl", "MnCl<sub>2</sub>", "Cl<sub>2</sub>", "H<sub>2</sub>O"]
+    context: "En medio ácido, el permanganato de potasio (KMnO₄) oxida al ácido clorhídrico. El Mn reduce su número de oxidación de <strong>+7 a +2</strong>.",
+    reactants: [{ coef:2, formula:"KMnO4", atoms:{K:1,Mn:1,O:4} }, { coef:16, formula:"HCl", atoms:{H:1,Cl:1} }],
+    products:  [{ coef:2, formula:"KCl", atoms:{K:1,Cl:1} }, { coef:2, formula:"MnCl2", atoms:{Mn:1,Cl:2} }, { coef:5, formula:"Cl2", atoms:{Cl:2} }, { coef:8, formula:"H2O", atoms:{H:2,O:1} }],
+    hint: "Coeficientes: 2 KMnO₄ + 16 HCl → 2 KCl + 2 MnCl₂ + 5 Cl₂ + 8 H₂O. El Mn pasa de +7 a +2 (gana 5e⁻ × 2 = 10e⁻).",
+    displayReactants: ["KMnO<sub>4</sub>","HCl"], displayProducts: ["KCl","MnCl<sub>2</sub>","Cl<sub>2</sub>","H<sub>2</sub>O"]
   },
   {
     label: "Ecuación 5 · Descomposición del agua oxigenada",
     context: "El peróxido de hidrógeno (H₂O₂) se descompone espontáneamente. Esta es una reacción de <strong>dismutación (auto-redox)</strong>: el mismo elemento (O) se oxida y se reduce simultáneamente.",
-    reactants: [
-      { coef: 2, formula: "H2O2", atoms: {H:2, O:2} }
-    ],
-    products: [
-      { coef: 2, formula: "H2O", atoms: {H:2, O:1} },
-      { coef: 1, formula: "O2", atoms: {O:2} }
-    ],
-    hint: "2 H₂O₂ → 2 H₂O + O₂. Verifica: H: 4=4 ✓, O: 4=2+2=4 ✓. El O en H₂O₂ tiene número de oxidación -1; en H₂O es -2 (se reduce) y en O₂ es 0 (se oxida).",
-    displayReactants: ["H<sub>2</sub>O<sub>2</sub>"],
-    displayProducts: ["H<sub>2</sub>O", "O<sub>2</sub>"]
+    reactants: [{ coef:2, formula:"H2O2", atoms:{H:2,O:2} }],
+    products:  [{ coef:2, formula:"H2O", atoms:{H:2,O:1} }, { coef:1, formula:"O2", atoms:{O:2} }],
+    hint: "2 H₂O₂ → 2 H₂O + O₂. El O en H₂O₂ tiene número de oxidación -1; en H₂O es -2 (se reduce) y en O₂ es 0 (se oxida).",
+    displayReactants: ["H<sub>2</sub>O<sub>2</sub>"], displayProducts: ["H<sub>2</sub>O","O<sub>2</sub>"]
   },
   {
     label: "Ecuación 6 · Combustión del etanol",
-    context: "La combustión completa del etanol (C₂H₅OH) es una reacción de <strong>oxidación</strong> donde el carbono se oxida completamente a CO₂. Esta reacción libera energía y es la base de los combustibles de alcohol.",
-    reactants: [
-      { coef: 1, formula: "C2H5OH", atoms: {C:2, H:6, O:1} },
-      { coef: 3, formula: "O2", atoms: {O:2} }
-    ],
-    products: [
-      { coef: 2, formula: "CO2", atoms: {C:1, O:2} },
-      { coef: 3, formula: "H2O", atoms: {H:2, O:1} }
-    ],
-    hint: "Balancea primero C: 2 CO₂. Luego H: 6H → 3 H₂O. Ahora oxígeno: productos tienen 4+3=7 O. Reactivos: 1 (del etanol) + x·2 = 7 → x=3. Coeficientes: 1, 3, 2, 3.",
-    displayReactants: ["C<sub>2</sub>H<sub>5</sub>OH", "O<sub>2</sub>"],
-    displayProducts: ["CO<sub>2</sub>", "H<sub>2</sub>O"]
+    context: "La combustión completa del etanol (C₂H₅OH) es una reacción de <strong>oxidación</strong> donde el carbono se oxida completamente a CO₂.",
+    reactants: [{ coef:1, formula:"C2H5OH", atoms:{C:2,H:6,O:1} }, { coef:3, formula:"O2", atoms:{O:2} }],
+    products:  [{ coef:2, formula:"CO2", atoms:{C:1,O:2} }, { coef:3, formula:"H2O", atoms:{H:2,O:1} }],
+    hint: "Balancea primero C: 2 CO₂. Luego H: 6H → 3 H₂O. Oxígeno: productos tienen 4+3=7 O. Reactivos: 1 + x·2 = 7 → x=3.",
+    displayReactants: ["C<sub>2</sub>H<sub>5</sub>OH","O<sub>2</sub>"], displayProducts: ["CO<sub>2</sub>","H<sub>2</sub>O"]
   }
 ];
 
-let currentQ = 0, score = 0, hintsUsed = 0, attempts = 0;
-let hintUsedThisQ = false, answeredThisQ = false;
-let correctCount = 0;
+let currentQ=0, score=0, hintsUsed=0, attempts=0;
+let hintUsedThisQ=false, answeredThisQ=false, correctCount=0;
+let displayedScore=0;
 
+// ── PAGE LOAD ANIMATION ──────────────────────────────────────────
+window.addEventListener('load', () => {
+  // Header slides in
+  anime({ targets: '#main-header', opacity:[0,1], translateY:[-20,0], duration:700, easing:'easeOutExpo' });
+
+  // Logo letters stagger
+  const logoEl = document.getElementById('logo-name');
+  const text = logoEl.innerHTML;
+  logoEl.innerHTML = text.replace(/Reactor/, (m) =>
+    m.split('').map(c => `<span class="char">${c}</span>`).join('')
+  );
+  anime({
+    targets: '#logo-name .char',
+    translateY: [-30, 0], opacity: [0,1],
+    delay: anime.stagger(60, {start: 200}),
+    duration: 600, easing: 'easeOutBack'
+  });
+
+  // Byline + sub fade
+  anime({ targets: ['#logo-byline','#logo-sub'], opacity:[0,1], translateX:[-8,0], delay: anime.stagger(80, {start:600}), duration:500, easing:'easeOutQuad' });
+  anime({ targets: '#header-score', opacity:[0,1], translateX:[10,0], duration:600, delay:500, easing:'easeOutExpo' });
+
+  // Intro headline words slide up
+  anime({
+    targets: '.word-inner', translateY: ['100%', '0%'], opacity:[0,1],
+    delay: anime.stagger(120, {start: 400}), duration: 700, easing: 'easeOutExpo'
+  });
+
+  // Desc, badges, rules, button cascade
+  anime({ targets: '.intro-desc', opacity:[0,1], translateY:[12,0], duration:600, delay:900, easing:'easeOutQuad' });
+  anime({ targets: '.badge', opacity:[0,1], translateY:[8,0], delay: anime.stagger(80, {start:1100}), duration:400, easing:'easeOutQuad' });
+  anime({ targets: '#intro-rules', opacity:[0,1], translateY:[16,0], duration:600, delay:1500, easing:'easeOutQuad' });
+  anime({ targets: '#btn-start', opacity:[0,1], translateY:[10,0], duration:500, delay:1800, easing:'easeOutBack' });
+});
+
+// ── GAME START ────────────────────────────────────────────────────
 function startGame() {
-  document.getElementById('intro-screen').style.display = 'none';
-  document.getElementById('game-screen').style.display = 'block';
-  buildProgress();
-  loadQuestion();
+  anime({
+    targets: '#intro-screen', opacity:[1,0], translateY:[0,-20],
+    duration:400, easing:'easeInQuad',
+    complete: () => {
+      document.getElementById('intro-screen').style.display='none';
+      document.getElementById('game-screen').style.display='block';
+      buildProgress();
+      loadQuestion();
+    }
+  });
 }
 
 function buildProgress() {
   const row = document.getElementById('progress-row');
-  row.innerHTML = '';
-  EQUATIONS.forEach((_, i) => {
-    const d = document.createElement('div');
-    d.className = 'prog-dot' + (i < currentQ ? ' done' : i === currentQ ? ' active' : '');
+  row.innerHTML='';
+  EQUATIONS.forEach((_,i) => {
+    const d=document.createElement('div');
+    d.className='prog-dot'+(i<currentQ?' done':i===currentQ?' active':'');
     row.appendChild(d);
   });
 }
 
+// ── LOAD QUESTION ─────────────────────────────────────────────────
 function loadQuestion() {
-  answeredThisQ = false; hintUsedThisQ = false; attempts = 0;
+  answeredThisQ=false; hintUsedThisQ=false; attempts=0;
   buildProgress();
-  const q = EQUATIONS[currentQ];
-  document.getElementById('eq-label').textContent = q.label;
-  document.getElementById('eq-context').innerHTML = q.context;
-  document.getElementById('hint-box').className = 'hint-box';
-  document.getElementById('feedback').className = 'feedback';
-  document.getElementById('btn-next').style.display = 'none';
-  document.getElementById('btn-hint').disabled = false;
-  document.getElementById('btn-check').disabled = false;
-
+  const q=EQUATIONS[currentQ];
+  document.getElementById('eq-label').textContent=q.label;
+  document.getElementById('eq-context').innerHTML=q.context;
+  document.getElementById('hint-box').className='hint-box';
+  document.getElementById('hint-box').style.opacity=0;
+  document.getElementById('feedback').className='feedback';
+  document.getElementById('feedback').style.opacity=0;
+  document.getElementById('btn-next').style.display='none';
+  document.getElementById('btn-hint').disabled=false;
+  document.getElementById('btn-check').disabled=false;
   buildEquation(q);
   updateAtomCounter();
 
+  // Card entrance
   const container = document.getElementById('eq-container');
-  container.classList.remove('fadein');
-  void container.offsetWidth;
-  container.classList.add('fadein');
+  container.style.opacity=0;
+  container.style.transform='translateY(24px)';
+  anime({ targets: container, opacity:[0,1], translateY:[24,0], duration:550, easing:'easeOutExpo' });
+
+  // Atom cards stagger in
+  setTimeout(() => {
+    anime({ targets: '.atom-card', opacity:[0,1], scale:[0.85,1], delay:anime.stagger(40), duration:350, easing:'easeOutBack' });
+  }, 200);
+
+  // Inputs bounce in
+  setTimeout(() => {
+    anime({ targets: '.coef-input', scale:[0,1], opacity:[0,1], delay:anime.stagger(60), duration:400, easing:'easeOutBack' });
+  }, 300);
 }
 
 function buildEquation(q) {
-  const row = document.getElementById('equation-row');
-  row.innerHTML = '';
-
-  const allParts = [
-    ...q.reactants.map((r,i) => ({...r, side:'R', idx:i, display: q.displayReactants[i]})),
-    {arrow: true},
-    ...q.products.map((p,i) => ({...p, side:'P', idx:i, display: q.displayProducts[i]}))
-  ];
-
-  allParts.forEach((part, pi) => {
-    if (part.arrow) {
-      const arr = document.createElement('span');
-      arr.className = 'eq-arrow'; arr.textContent = '→';
-      row.appendChild(arr);
-      return;
-    }
-
-    if (pi > 0 && !allParts[pi-1].arrow) {
-      const plus = document.createElement('span');
-      plus.className = 'eq-plus'; plus.textContent = '+';
-      row.appendChild(plus);
-    }
-    // Check if it's after arrow and not first product
-    if (part.side === 'P' && part.idx > 0) {
-      // plus already added above if previous wasn't arrow
-    }
-
-    const div = document.createElement('div');
-    div.className = 'eq-part';
-
-    const inp = document.createElement('input');
-    inp.type = 'number'; inp.min = 1; inp.max = 99;
-    inp.className = 'coef-input';
-    inp.id = `coef-${part.side}-${part.idx}`;
-    inp.placeholder = '?';
-    inp.oninput = updateAtomCounter;
-    inp.onkeydown = (e) => { if (e.key === 'Enter') checkAnswer(); };
-
-    const mol = document.createElement('span');
-    mol.className = 'molecule';
-    mol.innerHTML = part.display;
-
-    div.appendChild(inp);
-    div.appendChild(mol);
-    row.appendChild(div);
-  });
-}
-
-function getCoef(side, idx) {
-  const inp = document.getElementById(`coef-${side}-${idx}`);
-  return parseInt(inp?.value) || 1;
-}
-
-function updateAtomCounter() {
-  const q = EQUATIONS[currentQ];
-  const totals = {};
-
-  const count = (parts, side) => {
-    parts.forEach((p, i) => {
-      const c = getCoef(side, i);
-      Object.entries(p.atoms).forEach(([el, n]) => {
-        if (!totals[el]) totals[el] = {L:0, R:0};
-        totals[el][side === 'R' ? 'L' : 'R'] += c * n;
-      });
+  const row=document.getElementById('equation-row');
+  row.innerHTML='';
+  const buildSide=(parts, side, displays) => {
+    parts.forEach((p,i) => {
+      if(i>0){ const plus=document.createElement('span'); plus.className='eq-plus'; plus.textContent='+'; row.appendChild(plus); }
+      const div=document.createElement('div'); div.className='eq-part';
+      const inp=document.createElement('input');
+      inp.type='number'; inp.min=1; inp.max=99;
+      inp.className='coef-input'; inp.id=`coef-${side}-${i}`; inp.placeholder='?';
+      inp.style.opacity=0; inp.style.transform='scale(0)';
+      inp.oninput=updateAtomCounter;
+      inp.onkeydown=e=>{ if(e.key==='Enter') checkAnswer(); };
+      const mol=document.createElement('span'); mol.className='molecule'; mol.innerHTML=displays[i];
+      div.appendChild(inp); div.appendChild(mol); row.appendChild(div);
     });
   };
-  count(q.reactants, 'R');
-  count(q.products, 'P');
+  buildSide(q.reactants,'R',q.displayReactants);
+  const arr=document.createElement('span'); arr.className='eq-arrow'; arr.textContent='→'; row.appendChild(arr);
+  buildSide(q.products,'P',q.displayProducts);
+}
 
-  const ac = document.getElementById('atom-counter');
-  ac.innerHTML = '';
-  Object.entries(totals).forEach(([el, {L, R}]) => {
-    const balanced = L === R;
-    const card = document.createElement('div');
-    card.className = 'atom-card ' + (balanced ? 'balanced' : 'unbalanced');
-    card.innerHTML = `<span class="atom-symbol">${el}</span><div class="atom-counts"><span class="atom-side left">${L}</span><span class="atom-divider">|</span><span class="atom-side right">${R}</span></div>`;
+function getCoef(side,idx){ return parseInt(document.getElementById(`coef-${side}-${idx}`)?.value)||1; }
+
+function updateAtomCounter() {
+  const q=EQUATIONS[currentQ], totals={};
+  const count=(parts,side)=>parts.forEach((p,i)=>{
+    const c=getCoef(side,i);
+    Object.entries(p.atoms).forEach(([el,n])=>{
+      if(!totals[el]) totals[el]={L:0,R:0};
+      totals[el][side==='R'?'L':'R']+=c*n;
+    });
+  });
+  count(q.reactants,'R'); count(q.products,'P');
+  const ac=document.getElementById('atom-counter'); ac.innerHTML='';
+  Object.entries(totals).forEach(([el,{L,R}])=>{
+    const balanced=L===R;
+    const card=document.createElement('div');
+    card.className='atom-card '+(balanced?'balanced':'unbalanced');
+    card.innerHTML=`<span class="atom-symbol">${el}</span><div class="atom-counts"><span class="atom-side left">${L}</span><span class="atom-divider">|</span><span class="atom-side right">${R}</span></div>`;
     ac.appendChild(card);
   });
 }
 
 function isBalanced() {
-  const q = EQUATIONS[currentQ];
-  const totals = {};
-  const count = (parts, side) => {
-    parts.forEach((p, i) => {
-      const c = getCoef(side, i);
-      Object.entries(p.atoms).forEach(([el, n]) => {
-        if (!totals[el]) totals[el] = {L:0, R:0};
-        totals[el][side === 'R' ? 'L' : 'R'] += c * n;
-      });
+  const q=EQUATIONS[currentQ], totals={};
+  const count=(parts,side)=>parts.forEach((p,i)=>{
+    const c=getCoef(side,i);
+    Object.entries(p.atoms).forEach(([el,n])=>{
+      if(!totals[el]) totals[el]={L:0,R:0};
+      totals[el][side==='R'?'L':'R']+=c*n;
     });
-  };
-  count(q.reactants, 'R');
-  count(q.products, 'P');
-  return Object.values(totals).every(({L, R}) => L === R);
+  });
+  count(q.reactants,'R'); count(q.products,'P');
+  return Object.values(totals).every(({L,R})=>L===R);
 }
 
 function checkCoefs() {
-  const q = EQUATIONS[currentQ];
-  let allCorrect = true;
-  q.reactants.forEach((r, i) => {
-    const inp = document.getElementById(`coef-R-${i}`);
-    const val = parseInt(inp.value) || 1;
-    const ok = val === r.coef;
-    inp.className = 'coef-input ' + (ok ? 'correct' : 'wrong');
-    if (!ok) allCorrect = false;
-  });
-  q.products.forEach((p, i) => {
-    const inp = document.getElementById(`coef-P-${i}`);
-    const val = parseInt(inp.value) || 1;
-    const ok = val === p.coef;
-    inp.className = 'coef-input ' + (ok ? 'correct' : 'wrong');
-    if (!ok) allCorrect = false;
-  });
-  return allCorrect;
+  const q=EQUATIONS[currentQ]; let ok=true;
+  q.reactants.forEach((r,i)=>{ const inp=document.getElementById(`coef-R-${i}`); const v=parseInt(inp.value)||1; const good=v===r.coef; inp.className='coef-input '+(good?'correct':'wrong'); if(!good) ok=false; });
+  q.products.forEach((p,i)=>{ const inp=document.getElementById(`coef-P-${i}`); const v=parseInt(inp.value)||1; const good=v===p.coef; inp.className='coef-input '+(good?'correct':'wrong'); if(!good) ok=false; });
+  return ok;
 }
 
 function buildBalancedEq(q) {
-  const r = q.reactants.map((p,i) => (p.coef > 1 ? p.coef : '') + q.displayReactants[i].replace(/<[^>]*>/g,'')).join(' + ');
-  const p = q.products.map((p,i) => (p.coef > 1 ? p.coef : '') + q.displayProducts[i].replace(/<[^>]*>/g,'')).join(' + ');
-  return r + ' → ' + p;
+  const r=q.reactants.map((p,i)=>(p.coef>1?p.coef:'')+q.displayReactants[i].replace(/<[^>]*>/g,'')).join(' + ');
+  const p=q.products.map((p,i)=>(p.coef>1?p.coef:'')+q.displayProducts[i].replace(/<[^>]*>/g,'')).join(' + ');
+  return r+' → '+p;
 }
 
+// ── CHECK ANSWER ──────────────────────────────────────────────────
 function checkAnswer() {
-  if (answeredThisQ) return;
+  if(answeredThisQ) return;
   attempts++;
-  const balanced = isBalanced();
-  const correctCoefs = checkCoefs();
-  const fb = document.getElementById('feedback');
+  const balanced=isBalanced(), correctCoefs=checkCoefs();
+  const fb=document.getElementById('feedback');
 
-  if (balanced && correctCoefs) {
-    answeredThisQ = true;
-    correctCount++;
-    const pts = hintUsedThisQ ? 60 : (attempts === 1 ? 100 : 40);
-    score += pts;
-    document.getElementById('score-display').textContent = score;
-    fb.className = 'feedback show ok fadein';
-    fb.innerHTML = `✓ ¡Balanceada correctamente! +${pts} puntos<br>La ley de conservación de la masa se cumple: el número de átomos de cada elemento es igual en reactivos y productos.<div class="eq-balanced">${buildBalancedEq(EQUATIONS[currentQ])}</div>`;
-    document.getElementById('btn-next').style.display = 'inline-block';
-    document.getElementById('btn-check').disabled = true;
-    document.querySelectorAll('.coef-input').forEach(inp => { inp.disabled = true; inp.classList.add('pulse'); });
+  if(balanced && correctCoefs) {
+    answeredThisQ=true; correctCount++;
+    const pts=hintUsedThisQ?60:(attempts===1?100:40);
+    score+=pts;
+
+    // Animate score count up
+    anime({ targets: {val: displayedScore}, val: score, round:1, duration:800, easing:'easeOutExpo',
+      update: function(a) { displayedScore=Math.round(a.animatables[0].target.val); document.getElementById('score-display').textContent=displayedScore; }
+    });
+
+    fb.className='feedback show ok'; fb.style.opacity=0;
+    fb.innerHTML=`✓ ¡Balanceada correctamente! +${pts} puntos<br>La ley de conservación de la masa se cumple: el número de átomos de cada elemento es igual en reactivos y productos.<div class="eq-balanced">${buildBalancedEq(EQUATIONS[currentQ])}</div>`;
+    anime({ targets: fb, opacity:[0,1], translateY:[8,0], duration:400, easing:'easeOutQuad' });
+
+    // Inputs pulse green
+    anime({ targets: '.coef-input.correct', scale:[1,1.12,1], duration:500, easing:'easeOutElastic(1,.5)', delay:anime.stagger(60) });
+
+    document.getElementById('btn-next').style.display='inline-block';
+    document.getElementById('btn-next').style.opacity=0;
+    anime({ targets: '#btn-next', opacity:[0,1], translateX:[-10,0], duration:400, delay:300, easing:'easeOutQuad' });
+    document.getElementById('btn-check').disabled=true;
+    document.querySelectorAll('.coef-input').forEach(inp=>inp.disabled=true);
+
+    spawnParticles();
+
   } else {
-    fb.className = 'feedback show fail fadein';
-    const unbalanced = [];
-    document.getElementById('atom-counter').querySelectorAll('.atom-card.unbalanced .atom-symbol').forEach(el => unbalanced.push(el.textContent));
-    fb.innerHTML = `✗ Aún no está balanceada. Elementos desbalanceados: <strong>${unbalanced.join(', ')}</strong>. Observa el contador de átomos y ajusta los coeficientes.`;
-    document.getElementById('eq-container').classList.add('shake');
-    setTimeout(() => document.getElementById('eq-container').classList.remove('shake'), 400);
+    fb.className='feedback show fail'; fb.style.opacity=0;
+    const unbalanced=[];
+    document.getElementById('atom-counter').querySelectorAll('.atom-card.unbalanced .atom-symbol').forEach(el=>unbalanced.push(el.textContent));
+    fb.innerHTML=`✗ Aún no está balanceada. Elementos desbalanceados: <strong>${unbalanced.join(', ')}</strong>. Observa el contador de átomos y ajusta los coeficientes.`;
+    anime({ targets: fb, opacity:[0,1], translateY:[8,0], duration:400, easing:'easeOutQuad' });
+
+    // Shake wrong inputs
+    anime({ targets: '.coef-input.wrong', translateX:[-6,6,-4,4,-2,2,0], duration:400, easing:'easeInOutSine' });
+
+    // Shake container
+    anime({ targets: '#eq-container', translateX:[-8,8,-5,5,0], duration:350, easing:'easeInOutSine' });
   }
 }
 
+// ── PARTICLES ─────────────────────────────────────────────────────
+function spawnParticles() {
+  const symbols=['⚗️','✨','⚡','🧪','💚','✓'];
+  for(let i=0;i<12;i++) {
+    const el=document.createElement('div');
+    el.className='particle';
+    el.textContent=symbols[Math.floor(Math.random()*symbols.length)];
+    el.style.left=Math.random()*100+'vw';
+    el.style.top='60vh';
+    document.body.appendChild(el);
+    anime({
+      targets: el,
+      translateY: [0, -(150+Math.random()*200)],
+      translateX: [(Math.random()-0.5)*120],
+      rotate: [0, (Math.random()-0.5)*720],
+      opacity: [1,0],
+      scale: [1, 0.3+Math.random()*0.7],
+      duration: 1000+Math.random()*800,
+      delay: Math.random()*300,
+      easing: 'easeOutExpo',
+      complete: ()=>el.remove()
+    });
+  }
+}
+
+// ── HINT ─────────────────────────────────────────────────────────
 function showHint() {
-  if (hintUsedThisQ) return;
-  hintUsedThisQ = true; hintsUsed++;
-  document.getElementById('btn-hint').disabled = true;
-  const hb = document.getElementById('hint-box');
-  hb.className = 'hint-box show fadein';
-  hb.innerHTML = '<strong>💡 Pista:</strong> ' + EQUATIONS[currentQ].hint;
+  if(hintUsedThisQ) return;
+  hintUsedThisQ=true; hintsUsed++;
+  document.getElementById('btn-hint').disabled=true;
+  const hb=document.getElementById('hint-box');
+  hb.className='hint-box show'; hb.style.opacity=0;
+  hb.innerHTML='<strong>💡 Pista:</strong> '+EQUATIONS[currentQ].hint;
+  anime({ targets: hb, opacity:[0,1], translateY:[-8,0], scaleY:[0.8,1], duration:400, easing:'easeOutBack' });
 }
 
 function resetInputs() {
-  document.querySelectorAll('.coef-input').forEach(inp => {
-    inp.value = ''; inp.className = 'coef-input';
-  });
+  document.querySelectorAll('.coef-input').forEach(inp=>{ inp.value=''; inp.className='coef-input'; });
   updateAtomCounter();
 }
 
+// ── NEXT QUESTION ─────────────────────────────────────────────────
 function nextQuestion() {
-  currentQ++;
-  if (currentQ >= EQUATIONS.length) { showResult(); return; }
-  loadQuestion();
+  anime({
+    targets: '#eq-container', opacity:[1,0], translateX:[0,-40], duration:300, easing:'easeInQuad',
+    complete: () => { currentQ++; if(currentQ>=EQUATIONS.length){ showResult(); } else { loadQuestion(); } }
+  });
 }
 
+// ── RESULT ────────────────────────────────────────────────────────
 function showResult() {
-  document.getElementById('game-screen').style.display = 'none';
-  const rs = document.getElementById('result-screen');
-  rs.style.display = 'block'; rs.classList.add('show', 'fadein');
-  document.getElementById('r-score').textContent = score;
-  document.getElementById('r-correct').textContent = correctCount + '/6';
-  document.getElementById('r-hints').textContent = hintsUsed;
+  document.getElementById('game-screen').style.display='none';
+  const rs=document.getElementById('result-screen');
+  rs.style.display='block';
 
-  let big, tagline, msg;
-  if (correctCount === 6) {
-    big = '¡Per<span>fec</span>to!'; tagline = 'Maestro del balance';
-    msg = 'Balanceaste las 6 ecuaciones. Dominas la conservación de la masa y las reacciones redox y ácido-base. El Dr. Morales te contrataría.';
-  } else if (correctCount >= 4) {
-    big = '¡Muy<br><span>bien</span>!'; tagline = 'Buen químico';
-    msg = 'Sólido resultado. Repasa las ecuaciones redox más complejas (KMnO₄) y dominarás el tema completamente.';
-  } else if (correctCount >= 2) {
-    big = '¡Ca<span>si</span>!'; tagline = 'Sigue practicando';
-    msg = 'Tienes las bases. Recuerda: balancea primero los elementos que aparecen en menos moléculas, deja H y O para el final.';
-  } else {
-    big = 'A re<span>pa</span>sar'; tagline = 'El laboratorio te espera';
-    msg = 'Las ecuaciones redox son complejas. Revisa el método de cambio de número de oxidación y vuelve a intentarlo.';
-  }
-  document.getElementById('r-big').innerHTML = big;
-  document.getElementById('r-tagline').textContent = tagline;
-  document.getElementById('r-msg').textContent = msg.replace(/<[^>]*>/g,'');
+  let big,tagline,msg;
+  if(correctCount===6){ big='¡Per<span>fec</span>to!'; tagline='Maestro del balance'; msg='Balanceaste las 6 ecuaciones. Dominas la conservación de la masa y las reacciones redox y ácido-base. El Dr. Morales te contrataría.'; }
+  else if(correctCount>=4){ big='¡Muy<br><span>bien</span>!'; tagline='Buen químico'; msg='Sólido resultado. Repasa las ecuaciones redox más complejas (KMnO₄) y dominarás el tema completamente.'; }
+  else if(correctCount>=2){ big='¡Ca<span>si</span>!'; tagline='Sigue practicando'; msg='Tienes las bases. Recuerda: balancea primero los elementos que aparecen en menos moléculas, deja H y O para el final.'; }
+  else{ big='A re<span>pa</span>sar'; tagline='El laboratorio te espera'; msg='Las ecuaciones redox son complejas. Revisa el método de cambio de número de oxidación y vuelve a intentarlo.'; }
+
+  document.getElementById('r-big').innerHTML=big;
+  document.getElementById('r-tagline').textContent=tagline;
+  document.getElementById('r-msg').textContent=msg.replace(/<[^>]*>/g,'');
+
+  // Big title drops in
+  anime({ targets: '#r-big', opacity:[0,1], translateY:[-40,0], duration:700, easing:'easeOutElastic(1,.6)', delay:100 });
+  anime({ targets: '#r-tagline', opacity:[0,1], duration:500, delay:500, easing:'easeOutQuad' });
+
+  // Cards stagger up
+  anime({ targets: ['.r-card'], opacity:[0,1], translateY:[20,0], delay:anime.stagger(120,{start:600}), duration:500, easing:'easeOutBack' });
+
+  // Score counts up
+  let displayed=0;
+  anime({ targets:{val:0}, val:score, round:1, duration:1200, delay:700, easing:'easeOutExpo',
+    update: a=>{ displayed=Math.round(a.animatables[0].target.val); document.getElementById('r-score').textContent=displayed; }
+  });
+  document.getElementById('r-correct').textContent=correctCount+'/6';
+  document.getElementById('r-hints').textContent=hintsUsed;
+
+  anime({ targets: '#r-msg', opacity:[0,1], translateY:[8,0], duration:500, delay:1100, easing:'easeOutQuad' });
+  anime({ targets: '#btn-restart', opacity:[0,1], translateY:[10,0], duration:500, delay:1300, easing:'easeOutBack' });
+
+  // Confetti if good score
+  if(correctCount>=4) setTimeout(()=>{ for(let i=0;i<3;i++) setTimeout(spawnParticles, i*400); }, 800);
 }
 
+// ── RESTART ───────────────────────────────────────────────────────
 function restartGame() {
-  currentQ = 0; score = 0; hintsUsed = 0; correctCount = 0;
-  document.getElementById('score-display').textContent = '0';
-  document.getElementById('result-screen').style.display = 'none';
-  document.getElementById('result-screen').classList.remove('show');
-  document.getElementById('game-screen').style.display = 'block';
-  loadQuestion();
+  currentQ=0; score=0; hintsUsed=0; correctCount=0; displayedScore=0;
+  document.getElementById('score-display').textContent='0';
+  anime({
+    targets: '#result-screen', opacity:[1,0], translateY:[0,20], duration:350, easing:'easeInQuad',
+    complete: () => {
+      document.getElementById('result-screen').style.display='none';
+      document.getElementById('game-screen').style.display='block';
+      buildProgress(); loadQuestion();
+    }
+  });
 }
 </script>
 </body>
