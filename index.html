@@ -104,7 +104,8 @@
     margin-top: 0.25rem;
     opacity: 0;
   }
-  .header-stats { display: flex; gap: 0.75rem; align-items: stretch; opacity: 0; }
+  .header-stats { display: none; gap: 0.75rem; align-items: stretch; opacity: 0; }
+  .header-stats.visible { display: flex; }
   .stat-pill {
     min-width: 84px;
     padding: 0.65rem 0.8rem;
@@ -902,6 +903,7 @@
       <button class="btn btn-secondary solution-btn" id="btn-solution" onclick="revealSolution()">Ver solución</button>
       <button class="btn btn-next" id="btn-next" onclick="nextQuestion()">Siguiente</button>
       <button class="btn btn-ghost" id="btn-reset" onclick="resetInputs()">Reiniciar intento</button>
+      <button class="btn btn-ghost" id="btn-menu" onclick="cancelToMenu()">Menú</button>
     </div>
   </section>
 
@@ -1506,7 +1508,6 @@ window.addEventListener("load", () => {
   logoEl.innerHTML = original.replace(/Reactor/, word => word.split("").map(c => `<span class="char">${c}</span>`).join(""));
   motion({ targets: "#logo-name .char", translateY: [-32,0], opacity: [0,1], delay: animeSafeStagger(55, 180), duration: 620, easing: "easeOutBack" });
   motion({ targets: ["#logo-byline", "#logo-sub"], opacity: [0,1], translateX: [-8,0], delay: animeSafeStagger(80, 560), duration: 520, easing: "easeOutQuad" });
-  motion({ targets: "#header-stats", opacity: [0,1], translateX: [12,0], duration: 600, delay: 460, easing: "easeOutExpo" });
   motion({ targets: ".word-inner", translateY: ["100%", "0%"], opacity: [0,1], delay: animeSafeStagger(120, 360), duration: 780, easing: "easeOutExpo" });
   motion({ targets: ".intro-desc", opacity: [0,1], translateY: [12,0], duration: 620, delay: 850, easing: "easeOutQuad" });
   motion({ targets: ".badge", opacity: [0,1], translateY: [8,0], delay: animeSafeStagger(70, 1040), duration: 430, easing: "easeOutQuad" });
@@ -1552,6 +1553,7 @@ function quickDemo() {
 }
 
 function showGuide() {
+  byId("header-stats").classList.remove("visible");
   byId("intro-screen").classList.remove("active");
   byId("result-screen").classList.remove("active");
   byId("game-screen").classList.remove("active");
@@ -1563,12 +1565,44 @@ function showGuide() {
 
 function showIntro() {
   clearTimer();
+  byId("header-stats").classList.remove("visible");
   byId("guide-screen").classList.remove("active");
   byId("game-screen").classList.remove("active");
   byId("result-screen").classList.remove("active");
   byId("intro-screen").classList.add("active");
   byId("intro-screen").style.opacity = 1;
   byId("setup-panel").style.opacity = 1;
+}
+
+function cancelToMenu() {
+  clearTimer();
+  state.currentQ = 0;
+  state.score = 0;
+  state.displayedScore = 0;
+  state.hintsUsed = 0;
+  state.correctCount = 0;
+  state.streak = 0;
+  state.maxStreak = 0;
+  state.attempts = 0;
+  state.questions = [];
+  state.review = [];
+  state.balancedMemory = new Set();
+  byId("timer-chip").textContent = "Sin tiempo";
+  byId("timer-chip").classList.remove("timer-active", "warn");
+  byId("timer-track").classList.remove("active", "warn");
+  byId("timer-fill").style.width = "100%";
+  updateHeaderStats();
+  motion({
+    targets: "#game-screen",
+    opacity: [1,0],
+    translateY: [0,18],
+    duration: 280,
+    easing: "easeInQuad",
+    complete: () => {
+      byId("game-screen").style.opacity = 1;
+      showIntro();
+    }
+  });
 }
 
 function switchGuideTab(tabName) {
@@ -1579,6 +1613,9 @@ function switchGuideTab(tabName) {
 
 function startGame() {
   const launchScreen = byId("guide-screen").classList.contains("active") ? "#guide-screen" : "#intro-screen";
+  byId("header-stats").classList.add("visible");
+  byId("header-stats").style.opacity = 0;
+  motion({ targets: "#header-stats", opacity: [0,1], translateX: [12,0], duration: 420, easing: "easeOutExpo" });
   const pool = getPool();
   const picked = shuffle(pool).slice(0, Math.min(state.roundSize, pool.length));
   state.questions = picked;
