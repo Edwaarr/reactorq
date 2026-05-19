@@ -1917,9 +1917,15 @@ function showLearning(q) {
 
 function showHint() {
   if (state.hintUsedThisQ || state.answeredThisQ) return;
+  const btn = byId("btn-hint");
+  if (btn.disabled) return;
+  // Guard against double-fire on mobile (touchend + click)
+  const now = Date.now();
+  if (state._lastHintTime && now - state._lastHintTime < 500) return;
+  state._lastHintTime = now;
+  btn.disabled = true;
   state.hintUsedThisQ = true;
   state.hintsUsed++;
-  byId("btn-hint").disabled = true;
   const box = byId("hint-box");
   box.className = "hint-box show";
   box.style.opacity = 0;
@@ -1933,7 +1939,25 @@ function revealSolution() {
   fillSolution(currentQuestion());
   updateAtomCounter();
   checkCoefs();
-  finishQuestion(true);
+  const q = currentQuestion();
+  clearTimer();
+  state.answeredThisQ = true;
+  byId("btn-check").disabled = true;
+  byId("btn-hint").disabled = true;
+  byId("btn-reset").disabled = true;
+  document.querySelectorAll(".coef-input").forEach(input => input.disabled = true);
+  state.streak = 0;
+  const feedback = byId("feedback");
+  feedback.className = "feedback show fail";
+  feedback.style.opacity = 0;
+  feedback.innerHTML = `Solución revelada. La ecuación correcta era:<div class="eq-balanced">${buildBalancedEq(q)}</div>`;
+  motion({ targets: feedback, opacity: [0,1], translateY: [8,0], duration: 420, easing: "easeOutQuad" });
+  state.review.push({ label: q.label, topic: q.topic, correct: false, points: 0, equation: buildBalancedEq(q) });
+  updateHeaderStats();
+  showLearning(q);
+  byId("btn-next").style.display = "inline-block";
+  byId("btn-next").style.opacity = 0;
+  motion({ targets: "#btn-next", opacity: [0,1], translateX: [-10,0], duration: 380, delay: 180, easing: "easeOutQuad" });
 }
 
 function fillSolution(q) {
