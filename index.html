@@ -480,6 +480,138 @@
   .controls { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; }
   .solution-btn { display: none; }
 
+  #guide-screen { padding: 1rem 0 2.5rem; }
+  .guide-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(280px, 1.05fr);
+    gap: 1.2rem;
+    align-items: stretch;
+    margin-bottom: 1rem;
+  }
+  .guide-title-block {
+    border: 1.5px solid var(--ink);
+    background: rgba(255, 253, 248, 0.84);
+    padding: clamp(1.2rem, 3vw, 2rem);
+    box-shadow: var(--shadow);
+  }
+  .guide-kicker {
+    font-family: "DM Mono", monospace;
+    font-size: 0.64rem;
+    letter-spacing: 2.4px;
+    text-transform: uppercase;
+    color: var(--ink3);
+    margin-bottom: 0.8rem;
+  }
+  .guide-title {
+    font-family: "Fraunces", serif;
+    font-size: clamp(2.4rem, 7vw, 4.8rem);
+    line-height: 0.95;
+    font-weight: 900;
+    letter-spacing: 0;
+    margin-bottom: 0.9rem;
+  }
+  .guide-title span { color: var(--accent); }
+  .guide-copy { color: var(--ink2); line-height: 1.7; max-width: 620px; }
+  .guide-card {
+    border: 1.5px solid var(--ink);
+    background: var(--card);
+    padding: 1.2rem;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  .guide-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 6px;
+    background: linear-gradient(90deg, var(--accent), var(--teal), var(--gold));
+  }
+  .guide-equation {
+    font-family: "DM Mono", monospace;
+    font-size: clamp(1.05rem, 3.4vw, 1.55rem);
+    line-height: 1.8;
+    margin: 0.5rem 0 1rem;
+    color: var(--ink);
+  }
+  .guide-equation strong {
+    color: var(--accent);
+    background: var(--red-light);
+    padding: 0.1rem 0.25rem;
+  }
+  .guide-note {
+    display: grid;
+    gap: 0.55rem;
+    color: var(--ink2);
+    line-height: 1.55;
+    font-size: 0.92rem;
+  }
+  .guide-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  .guide-tab {
+    border: 1.5px solid var(--border);
+    background: rgba(255, 253, 248, 0.72);
+    color: var(--ink2);
+    font-family: "DM Sans", sans-serif;
+    font-weight: 800;
+    padding: 0.66rem 0.88rem;
+    cursor: pointer;
+  }
+  .guide-tab.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .guide-panel {
+    display: none;
+    border: 1.5px solid var(--ink);
+    background: rgba(255, 253, 248, 0.86);
+    padding: clamp(1rem, 2.6vw, 1.5rem);
+    box-shadow: 0 18px 45px rgba(49, 33, 14, 0.10);
+  }
+  .guide-panel.active { display: block; }
+  .guide-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.85rem;
+  }
+  .lesson-card {
+    border: 1px solid var(--border);
+    background: var(--card);
+    padding: 0.95rem;
+    min-height: 150px;
+  }
+  .lesson-num {
+    font-family: "Fraunces", serif;
+    font-size: 1.65rem;
+    font-weight: 900;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 0.45rem;
+  }
+  .lesson-title {
+    font-weight: 900;
+    color: var(--ink);
+    margin-bottom: 0.35rem;
+  }
+  .lesson-text { color: var(--ink2); line-height: 1.55; font-size: 0.92rem; }
+  .lesson-eq {
+    font-family: "DM Mono", monospace;
+    font-size: 0.9rem;
+    margin-top: 0.6rem;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 0.45rem 0.55rem;
+    display: inline-block;
+  }
+  .guide-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.7rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+
   #result-screen { text-align: center; padding: 2.4rem 0; }
   .result-big {
     font-family: "Fraunces", serif;
@@ -554,6 +686,8 @@
     .game-top { grid-template-columns: 1fr; }
     .round-meta { justify-content: flex-start; }
     .panel-grid { grid-template-columns: 1fr; }
+    .guide-hero { grid-template-columns: 1fr; }
+    .guide-grid { grid-template-columns: 1fr 1fr; }
     .result-grid { grid-template-columns: repeat(2, 1fr); }
     .review-item { grid-template-columns: 1fr; }
   }
@@ -564,6 +698,8 @@
     .coef-input { width: 48px; height: 48px; font-size: 1.18rem; }
     .molecule { font-size: 1rem; }
     .controls .btn { flex: 1 1 100%; }
+    .guide-grid { grid-template-columns: 1fr; }
+    .guide-actions .btn { flex: 1 1 100%; }
     .result-grid { grid-template-columns: 1fr; }
   }
 </style>
@@ -651,9 +787,84 @@
         </div>
       </div>
       <div class="start-row">
+        <button class="btn btn-secondary" id="btn-guide" onclick="showGuide()">Repasar teoría</button>
         <button class="btn btn-secondary" id="btn-demo" onclick="quickDemo()">Partida rápida</button>
         <button class="btn btn-primary" id="btn-start" onclick="startGame()">Comenzar</button>
       </div>
+    </div>
+  </section>
+
+  <section id="guide-screen" class="screen">
+    <div class="guide-hero">
+      <div class="guide-title-block">
+        <div class="guide-kicker">Guía rápida</div>
+        <h2 class="guide-title">Aprende a <span>balancear</span></h2>
+        <p class="guide-copy">Antes de jugar puedes repasar el método base: qué significan los coeficientes, cómo conservar átomos y qué trucos usar según el tipo de reacción.</p>
+      </div>
+      <div class="guide-card">
+        <div class="guide-kicker">Idea central</div>
+        <div class="guide-equation">H<sub>2</sub> + O<sub>2</sub> → H<sub>2</sub>O<br><strong>2</strong>H<sub>2</sub> + O<sub>2</sub> → <strong>2</strong>H<sub>2</sub>O</div>
+        <div class="guide-note">
+          <p>Balancear no es cambiar la fórmula de una sustancia. Es cambiar cuántas moléculas participan.</p>
+          <p>Por eso se escriben coeficientes adelante: el subíndice pertenece a la sustancia, el coeficiente pertenece a la reacción.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="guide-tabs" role="tablist" aria-label="Temas de repaso">
+      <button class="guide-tab active" data-guide-tab="conceptos" onclick="switchGuideTab('conceptos')">Conceptos</button>
+      <button class="guide-tab" data-guide-tab="metodo" onclick="switchGuideTab('metodo')">Método</button>
+      <button class="guide-tab" data-guide-tab="ejemplos" onclick="switchGuideTab('ejemplos')">Ejemplos</button>
+      <button class="guide-tab" data-guide-tab="tipos" onclick="switchGuideTab('tipos')">Tipos</button>
+      <button class="guide-tab" data-guide-tab="errores" onclick="switchGuideTab('errores')">Errores comunes</button>
+    </div>
+
+    <div class="guide-panel active" data-guide-panel="conceptos">
+      <div class="guide-grid">
+        <div class="lesson-card"><div class="lesson-num">1</div><div class="lesson-title">Ley de conservación</div><p class="lesson-text">En una reacción química no desaparecen átomos: se reorganizan. Debe haber la misma cantidad de cada elemento a ambos lados.</p></div>
+        <div class="lesson-card"><div class="lesson-num">2</div><div class="lesson-title">Coeficientes</div><p class="lesson-text">Son los números grandes delante de cada sustancia. Multiplican todos los átomos de esa fórmula.</p><div class="lesson-eq">3H<sub>2</sub>O = 6 H y 3 O</div></div>
+        <div class="lesson-card"><div class="lesson-num">3</div><div class="lesson-title">Subíndices</div><p class="lesson-text">Son los números pequeños dentro de la fórmula. No se cambian al balancear, porque cambiarías la sustancia.</p><div class="lesson-eq">H<sub>2</sub>O no es H<sub>3</sub>O</div></div>
+      </div>
+    </div>
+
+    <div class="guide-panel" data-guide-panel="metodo">
+      <div class="guide-grid">
+        <div class="lesson-card"><div class="lesson-num">1</div><div class="lesson-title">Cuenta átomos</div><p class="lesson-text">Haz una lista mental o usa el contador del juego. Mira qué elementos están desbalanceados.</p></div>
+        <div class="lesson-card"><div class="lesson-num">2</div><div class="lesson-title">Empieza por lo menos repetido</div><p class="lesson-text">Balancea primero elementos que aparecen en pocos compuestos. Deja H y O para el final si aparecen en muchas partes.</p></div>
+        <div class="lesson-card"><div class="lesson-num">3</div><div class="lesson-title">Ajusta y revisa</div><p class="lesson-text">Cada coeficiente afecta toda la molécula. Después de cambiar uno, vuelve a contar todos los elementos.</p></div>
+      </div>
+    </div>
+
+    <div class="guide-panel" data-guide-panel="ejemplos">
+      <div class="guide-grid">
+        <div class="lesson-card"><div class="lesson-num">A</div><div class="lesson-title">Agua</div><p class="lesson-text">O<sub>2</sub> tiene 2 oxígenos, así que necesitas 2 aguas. Eso da 4 H, entonces necesitas 2 H<sub>2</sub>.</p><div class="lesson-eq">2H<sub>2</sub> + O<sub>2</sub> → 2H<sub>2</sub>O</div></div>
+        <div class="lesson-card"><div class="lesson-num">B</div><div class="lesson-title">Combustión</div><p class="lesson-text">En hidrocarburos: balancea C con CO<sub>2</sub>, H con H<sub>2</sub>O y al final O<sub>2</sub>.</p><div class="lesson-eq">CH<sub>4</sub> + 2O<sub>2</sub> → CO<sub>2</sub> + 2H<sub>2</sub>O</div></div>
+        <div class="lesson-card"><div class="lesson-num">C</div><div class="lesson-title">Neutralización</div><p class="lesson-text">Ácido + base suele producir sal + agua. Revisa primero el metal y el ion que forma la sal.</p><div class="lesson-eq">HCl + NaOH → NaCl + H<sub>2</sub>O</div></div>
+      </div>
+    </div>
+
+    <div class="guide-panel" data-guide-panel="tipos">
+      <div class="guide-grid">
+        <div class="lesson-card"><div class="lesson-num">N</div><div class="lesson-title">Neutralización</div><p class="lesson-text">Ácido + base → sal + agua. Ejemplo: HCl + NaOH.</p></div>
+        <div class="lesson-card"><div class="lesson-num">C</div><div class="lesson-title">Combustión</div><p class="lesson-text">Combustible + O<sub>2</sub> → CO<sub>2</sub> + H<sub>2</sub>O. Suele ser rápida de balancear con el método C-H-O.</p></div>
+        <div class="lesson-card"><div class="lesson-num">R</div><div class="lesson-title">Redox</div><p class="lesson-text">Hay transferencia de electrones. En el juego aparecen algunas redox complejas para practicar conteo cuidadoso.</p></div>
+        <div class="lesson-card"><div class="lesson-num">D</div><div class="lesson-title">Doble sustitución</div><p class="lesson-text">Dos compuestos intercambian iones. Puede formar precipitados como AgCl o BaSO<sub>4</sub>.</p></div>
+        <div class="lesson-card"><div class="lesson-num">S</div><div class="lesson-title">Síntesis</div><p class="lesson-text">Dos o más reactivos forman un producto. Ejemplo: metal + O<sub>2</sub> → óxido.</p></div>
+        <div class="lesson-card"><div class="lesson-num">X</div><div class="lesson-title">Descomposición</div><p class="lesson-text">Un compuesto se rompe en sustancias más simples. Ejemplo: carbonato → óxido + CO<sub>2</sub>.</p></div>
+      </div>
+    </div>
+
+    <div class="guide-panel" data-guide-panel="errores">
+      <div class="guide-grid">
+        <div class="lesson-card"><div class="lesson-num">!</div><div class="lesson-title">Cambiar fórmulas</div><p class="lesson-text">No cambies H<sub>2</sub>O por H<sub>3</sub>O ni O<sub>2</sub> por O. Solo se cambian coeficientes.</p></div>
+        <div class="lesson-card"><div class="lesson-num">!</div><div class="lesson-title">Olvidar paréntesis</div><p class="lesson-text">En Cu(NO<sub>3</sub>)<sub>2</sub>, el 2 multiplica todo el grupo NO<sub>3</sub>: hay 2 N y 6 O.</p></div>
+        <div class="lesson-card"><div class="lesson-num">!</div><div class="lesson-title">No revisar todos</div><p class="lesson-text">Puedes arreglar un elemento y desbalancear otro. Por eso el contador del juego es tu panel de control.</p></div>
+      </div>
+    </div>
+
+    <div class="guide-actions">
+      <button class="btn btn-secondary" onclick="showIntro()">Volver</button>
+      <button class="btn btn-primary" onclick="startGame()">Practicar ahora</button>
     </div>
   </section>
 
@@ -1340,7 +1551,34 @@ function quickDemo() {
   startGame();
 }
 
+function showGuide() {
+  byId("intro-screen").classList.remove("active");
+  byId("result-screen").classList.remove("active");
+  byId("game-screen").classList.remove("active");
+  byId("guide-screen").classList.add("active");
+  byId("guide-screen").style.opacity = 0;
+  motion({ targets: "#guide-screen", opacity: [0,1], translateY: [18,0], duration: 520, easing: "easeOutExpo" });
+  motion({ targets: ".lesson-card", opacity: [0,1], translateY: [16,0], delay: animeSafeStagger(65, 180), duration: 420, easing: "easeOutBack" });
+}
+
+function showIntro() {
+  clearTimer();
+  byId("guide-screen").classList.remove("active");
+  byId("game-screen").classList.remove("active");
+  byId("result-screen").classList.remove("active");
+  byId("intro-screen").classList.add("active");
+  byId("intro-screen").style.opacity = 1;
+  byId("setup-panel").style.opacity = 1;
+}
+
+function switchGuideTab(tabName) {
+  document.querySelectorAll(".guide-tab").forEach(tab => tab.classList.toggle("active", tab.dataset.guideTab === tabName));
+  document.querySelectorAll(".guide-panel").forEach(panel => panel.classList.toggle("active", panel.dataset.guidePanel === tabName));
+  motion({ targets: `.guide-panel[data-guide-panel="${tabName}"] .lesson-card`, opacity: [0,1], translateY: [14,0], delay: animeSafeStagger(55, 0), duration: 360, easing: "easeOutBack" });
+}
+
 function startGame() {
+  const launchScreen = byId("guide-screen").classList.contains("active") ? "#guide-screen" : "#intro-screen";
   const pool = getPool();
   const picked = shuffle(pool).slice(0, Math.min(state.roundSize, pool.length));
   state.questions = picked;
@@ -1357,13 +1595,14 @@ function startGame() {
   animateBeakerReaction();
 
   motion({
-    targets: "#intro-screen",
+    targets: launchScreen,
     opacity: [1,0],
     translateY: [0,-20],
     duration: 380,
     easing: "easeInQuad",
     complete: () => {
       byId("intro-screen").classList.remove("active");
+      byId("guide-screen").classList.remove("active");
       byId("result-screen").classList.remove("active");
       byId("game-screen").classList.add("active");
       byId("game-screen").style.opacity = 1;
