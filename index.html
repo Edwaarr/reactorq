@@ -3,311 +3,1370 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ReactorQ — Balanceador de Ecuaciones</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='8' fill='%231a1208'/><text y='.9em' font-size='78' x='12' fill='%23c84b1f' font-family='Georgia,serif' font-weight='900'>Q</text></svg>">
+<title>ReactorQ - Balanceador de Ecuaciones</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='8' fill='%23191612'/><text y='.86em' font-size='76' x='12' fill='%23d94f28' font-family='Georgia,serif' font-weight='900'>Q</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Fraunces:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #f5f0e8; --bg2: #ede7d9; --ink: #1a1208; --ink2: #5a4e3a; --ink3: #9c8e78;
-    --accent: #c84b1f; --accent2: #e8a020; --green: #2d6a4f;
-    --green-light: #d8f3dc; --red-light: #fde8e0; --card: #ffffff; --border: #d4c9b4;
+    --bg: #f7f2e8;
+    --bg2: #ede5d5;
+    --ink: #191612;
+    --ink2: #514a3e;
+    --ink3: #968874;
+    --card: #fffdf8;
+    --border: #d5c6ac;
+    --accent: #d94f28;
+    --accent-dark: #a9351c;
+    --gold: #e2a72e;
+    --teal: #167b75;
+    --green: #2d6a4f;
+    --green-light: #d9f2df;
+    --red-light: #fde5dc;
+    --blue-light: #dff1f3;
+    --shadow: 0 24px 70px rgba(49, 33, 14, 0.14);
   }
+
   html { font-size: 16px; }
   body {
-    background: var(--bg); color: var(--ink); font-family: 'DM Sans', sans-serif;
-    min-height: 100vh; overflow-x: hidden;
-    background-image: radial-gradient(circle at 20% 20%, rgba(200,75,31,0.06) 0%, transparent 50%),
-      radial-gradient(circle at 80% 80%, rgba(45,106,79,0.06) 0%, transparent 50%);
+    background:
+      radial-gradient(circle at 12% 8%, rgba(217, 79, 40, 0.10), transparent 26rem),
+      radial-gradient(circle at 86% 16%, rgba(22, 123, 117, 0.10), transparent 24rem),
+      linear-gradient(135deg, var(--bg) 0%, #f3ead9 52%, #edf1df 100%);
+    color: var(--ink);
+    font-family: "DM Sans", sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
   }
   body::before {
-    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.55;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
   }
-  .wrapper { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+  .formula-field {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .float-formula {
+    position: absolute;
+    font-family: "DM Mono", monospace;
+    font-size: clamp(0.8rem, 1.7vw, 1.1rem);
+    color: rgba(25, 22, 18, 0.16);
+    animation: driftFormula var(--drift, 18s) linear infinite;
+    transform: translateY(105vh) rotate(var(--rot, -8deg));
+  }
+  @keyframes driftFormula {
+    0% { transform: translateY(105vh) translateX(0) rotate(var(--rot, -8deg)); opacity: 0; }
+    10%, 78% { opacity: 1; }
+    100% { transform: translateY(-18vh) translateX(var(--side, 36px)) rotate(calc(var(--rot, -8deg) * -1)); opacity: 0; }
+  }
+  .wrapper { position: relative; z-index: 1; max-width: 1040px; margin: 0 auto; padding: 1.5rem 1.2rem 4rem; }
 
   header {
-    display: flex; align-items: flex-end; justify-content: space-between;
-    margin-bottom: 3rem; padding-bottom: 1.5rem; border-bottom: 2px solid var(--ink);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+    padding-bottom: 1.2rem;
+    border-bottom: 2px solid var(--ink);
     opacity: 0;
   }
-  .logo { display: flex; flex-direction: column; }
-  .logo-name { font-family: 'Fraunces', serif; font-size: 2.4rem; font-weight: 900; color: var(--ink); letter-spacing: -2px; line-height: 1; overflow: hidden; }
+  .logo { display: flex; flex-direction: column; min-width: 0; }
+  .logo-name {
+    font-family: "Fraunces", serif;
+    font-size: clamp(2rem, 7vw, 3.2rem);
+    font-weight: 900;
+    color: var(--ink);
+    line-height: 0.95;
+    overflow: hidden;
+    letter-spacing: 0;
+  }
   .logo-name .char { display: inline-block; }
   .logo-name span { color: var(--accent); }
-  .logo-sub { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 3px; color: var(--ink3); text-transform: uppercase; margin-top: 4px; opacity: 0; }
-  .logo-byline { font-family: 'Fraunces', serif; font-size: 0.7rem; color: var(--ink3); margin-top: 2px; letter-spacing: 0.5px; opacity: 0; }
-  .header-score { text-align: right; opacity: 0; }
-  .score-label { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase; color: var(--ink3); }
-  .score-val { font-family: 'Fraunces', serif; font-size: 2rem; font-weight: 700; color: var(--ink); line-height: 1; }
+  .logo-byline { font-family: "Fraunces", serif; font-size: 0.75rem; color: var(--ink3); margin-top: 0.25rem; opacity: 0; }
+  .logo-sub {
+    font-family: "DM Mono", monospace;
+    font-size: 0.62rem;
+    letter-spacing: 2px;
+    color: var(--ink3);
+    text-transform: uppercase;
+    margin-top: 0.25rem;
+    opacity: 0;
+  }
+  .header-stats { display: flex; gap: 0.75rem; align-items: stretch; opacity: 0; }
+  .stat-pill {
+    min-width: 84px;
+    padding: 0.65rem 0.8rem;
+    border: 1.5px solid var(--ink);
+    background: rgba(255, 253, 248, 0.72);
+    text-align: right;
+  }
+  .stat-label { font-family: "DM Mono", monospace; font-size: 0.58rem; letter-spacing: 1.6px; text-transform: uppercase; color: var(--ink3); }
+  .stat-val { font-family: "Fraunces", serif; font-size: 1.8rem; font-weight: 900; line-height: 1; color: var(--ink); }
 
-  .progress-row { display: flex; gap: 6px; margin-bottom: 2rem; }
-  .prog-dot { flex: 1; height: 4px; background: var(--border); border-radius: 2px; transition: background 0.4s; }
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  #intro-screen { padding: 1rem 0 2rem; }
+  .intro-layout { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr); gap: 1.5rem; align-items: center; }
+  .intro-copy { padding: 2rem 0; }
+  .intro-headline {
+    font-family: "Fraunces", serif;
+    font-size: clamp(3rem, 10vw, 6.4rem);
+    font-weight: 900;
+    line-height: 0.9;
+    color: var(--ink);
+    margin-bottom: 1.1rem;
+    letter-spacing: 0;
+  }
+  .intro-headline .word { display: block; overflow: hidden; }
+  .intro-headline .word-inner { display: inline-block; }
+  .intro-headline em { color: var(--accent); font-style: italic; }
+  .intro-desc { max-width: 560px; color: var(--ink2); font-size: 1.02rem; line-height: 1.75; margin-bottom: 1.25rem; opacity: 0; }
+  .badge-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; }
+  .badge {
+    font-family: "DM Mono", monospace;
+    font-size: 0.62rem;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+    color: var(--ink3);
+    padding: 0.35rem 0.72rem;
+    background: rgba(255, 253, 248, 0.55);
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  .lab-stage {
+    position: relative;
+    min-height: 430px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+  }
+  .lab-orbit {
+    position: absolute;
+    width: min(88vw, 390px);
+    aspect-ratio: 1;
+    border: 1px dashed rgba(25, 22, 18, 0.18);
+    border-radius: 50%;
+    opacity: 0;
+  }
+  .molecule-dot {
+    position: absolute;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1.5px solid var(--ink);
+    display: grid;
+    place-items: center;
+    font-family: "DM Mono", monospace;
+    font-size: 0.65rem;
+    background: var(--card);
+    box-shadow: 0 10px 24px rgba(30, 24, 15, 0.12);
+  }
+  .dot-a { top: 4%; left: 44%; color: var(--accent); }
+  .dot-b { right: 2%; top: 46%; color: var(--teal); }
+  .dot-c { bottom: 5%; left: 44%; color: var(--green); }
+  .dot-d { left: 2%; top: 46%; color: var(--gold); }
+
+  .beaker {
+    position: relative;
+    width: min(76vw, 310px);
+    aspect-ratio: 0.72;
+    border: 3px solid var(--ink);
+    border-top: 0;
+    border-radius: 0 0 34px 34px;
+    background: rgba(255, 253, 248, 0.68);
+    box-shadow: var(--shadow);
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  .beaker.is-reacting .liquid {
+    animation: liquidReact 0.9s ease-in-out;
+  }
+  @keyframes liquidReact {
+    0%, 100% { filter: saturate(1); transform: scaleY(1); }
+    35% { filter: saturate(1.45); transform: scaleY(1.08); }
+    70% { filter: saturate(1.15); transform: scaleY(0.98); }
+  }
+  .beaker::before {
+    content: "";
+    position: absolute;
+    left: 14%;
+    right: 14%;
+    top: -14px;
+    height: 28px;
+    border: 3px solid var(--ink);
+    border-radius: 999px;
+    background: var(--card);
+  }
+  .liquid {
+    position: absolute;
+    left: 7%;
+    right: 7%;
+    bottom: 7%;
+    height: 62%;
+    border-radius: 0 0 26px 26px;
+    background:
+      linear-gradient(180deg, rgba(22, 123, 117, 0.10), rgba(22, 123, 117, 0.32)),
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.18) 0 20px, rgba(255,255,255,0) 20px 46px);
+    overflow: hidden;
+  }
+  .liquid::before {
+    content: "";
+    position: absolute;
+    left: -10%;
+    right: -10%;
+    top: -14px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255, 253, 248, 0.55);
+    animation: wave 3.2s ease-in-out infinite;
+  }
+  .bubble {
+    position: absolute;
+    bottom: 16%;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(25, 22, 18, 0.35);
+    background: rgba(255,255,255,0.36);
+    animation: bubble 3.2s ease-in infinite;
+  }
+  .bubble:nth-child(1) { left: 24%; animation-delay: 0s; }
+  .bubble:nth-child(2) { left: 49%; animation-delay: 0.8s; transform: scale(0.72); }
+  .bubble:nth-child(3) { left: 70%; animation-delay: 1.4s; transform: scale(0.9); }
+  .bubble:nth-child(4) { left: 35%; animation-delay: 2.1s; transform: scale(0.58); }
+  .beaker-label {
+    position: absolute;
+    left: 50%;
+    top: 49%;
+    transform: translate(-50%, -50%);
+    font-family: "Fraunces", serif;
+    font-size: 3rem;
+    font-weight: 900;
+    color: rgba(25, 22, 18, 0.82);
+  }
+  @keyframes bubble {
+    0% { opacity: 0; translate: 0 0; }
+    20% { opacity: 1; }
+    100% { opacity: 0; translate: 12px -170px; }
+  }
+  @keyframes wave {
+    0%, 100% { transform: translateX(-3%); }
+    50% { transform: translateX(3%); }
+  }
+
+  .setup-panel {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 1.2rem;
+    border: 1.5px solid var(--ink);
+    background: rgba(255, 253, 248, 0.82);
+    box-shadow: 0 18px 45px rgba(49, 33, 14, 0.10);
+    opacity: 0;
+  }
+  .setup-row { display: grid; grid-template-columns: 150px 1fr; gap: 1rem; align-items: center; }
+  .setup-label { font-family: "DM Mono", monospace; font-size: 0.62rem; letter-spacing: 2px; text-transform: uppercase; color: var(--ink3); }
+  .segmented { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .seg-btn {
+    border: 1.5px solid var(--border);
+    background: transparent;
+    color: var(--ink2);
+    font-family: "DM Sans", sans-serif;
+    font-size: 0.88rem;
+    font-weight: 700;
+    padding: 0.65rem 0.9rem;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s, color 0.2s, transform 0.2s;
+  }
+  .seg-btn:hover { border-color: var(--ink); color: var(--ink); transform: translateY(-1px); }
+  .seg-btn.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .toggle-btn.active { background: var(--teal); border-color: var(--teal); color: #fff; }
+  .btn {
+    font-family: "DM Sans", sans-serif;
+    font-weight: 800;
+    font-size: 0.92rem;
+    padding: 0.78rem 1.35rem;
+    border: 1.5px solid var(--ink);
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s, border-color 0.2s, color 0.2s;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-primary { background: var(--ink); color: var(--bg); }
+  .btn-primary:hover { background: var(--accent); border-color: var(--accent); }
+  .btn-secondary { background: transparent; color: var(--ink); }
+  .btn-secondary:hover { background: rgba(255,255,255,0.55); }
+  .btn-next { background: var(--accent); border-color: var(--accent); color: #fff; display: none; }
+  .btn-next:hover { background: var(--accent-dark); border-color: var(--accent-dark); }
+  .btn-ghost { background: transparent; color: var(--ink3); border-color: var(--border); }
+  .btn-ghost:hover { color: var(--ink); border-color: var(--ink); }
+  .start-row { display: flex; justify-content: flex-end; gap: 0.75rem; flex-wrap: wrap; }
+  #btn-start { min-width: 180px; }
+
+  .game-top { display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: center; margin-bottom: 1rem; }
+  .timer-track {
+    grid-column: 1 / -1;
+    height: 9px;
+    border: 1px solid rgba(25, 22, 18, 0.2);
+    background: rgba(255, 253, 248, 0.58);
+    overflow: hidden;
+    display: none;
+  }
+  .timer-track.active { display: block; }
+  .timer-fill {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, var(--teal), var(--gold), var(--accent));
+    transform-origin: left center;
+    transition: width 0.35s linear, background 0.25s;
+  }
+  .timer-track.warn .timer-fill { background: #9f1d16; }
+  .progress-row { display: flex; gap: 6px; }
+  .prog-dot { flex: 1; min-width: 18px; height: 5px; border-radius: 999px; background: var(--border); transition: background 0.35s, transform 0.35s; }
   .prog-dot.done { background: var(--green); }
-  .prog-dot.active { background: var(--accent); }
+  .prog-dot.active { background: var(--accent); transform: scaleY(1.7); }
+  .round-meta {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    font-family: "DM Mono", monospace;
+    font-size: 0.66rem;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--ink3);
+  }
+  .meta-chip { border: 1px solid var(--border); padding: 0.35rem 0.55rem; background: rgba(255, 253, 248, 0.6); }
+  .meta-chip.timer-active {
+    background: var(--accent);
+    border-color: var(--accent-dark);
+    color: #fff;
+    font-size: 0.88rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    padding: 0.55rem 0.85rem;
+    box-shadow: 0 12px 30px rgba(217, 79, 40, 0.22);
+  }
+  .meta-chip.timer-active::before { content: "TIEMPO "; opacity: 0.76; }
+  .meta-chip.warn {
+    background: #9f1d16;
+    border-color: #7f140f;
+    color: #fff;
+    animation: timerPulse 0.8s ease-in-out infinite;
+  }
+  @keyframes timerPulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 12px 30px rgba(217, 79, 40, 0.22); }
+    50% { transform: scale(1.06); box-shadow: 0 16px 42px rgba(159, 29, 22, 0.38); }
+  }
 
   .eq-container {
-    background: var(--card); border: 1.5px solid var(--ink); padding: 2rem;
-    margin-bottom: 1.5rem; position: relative; overflow: hidden; opacity: 0;
+    background: var(--card);
+    border: 1.5px solid var(--ink);
+    padding: clamp(1rem, 3vw, 2rem);
+    margin-bottom: 1rem;
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+    box-shadow: var(--shadow);
   }
-  .eq-container::before { content: ''; position: absolute; top: 0; left: 0; width: 5px; height: 100%; background: var(--accent); }
-  .eq-label { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 3px; text-transform: uppercase; color: var(--ink3); margin-bottom: 1rem; padding-left: 1rem; }
-  .eq-context { font-size: 0.9rem; color: var(--ink2); padding-left: 1rem; margin-bottom: 1.5rem; line-height: 1.6; }
+  .eq-container::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 100%;
+    background: linear-gradient(var(--accent), var(--teal));
+  }
+  .eq-head { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; padding-left: 0.75rem; margin-bottom: 1rem; }
+  .eq-label { font-family: "DM Mono", monospace; font-size: 0.68rem; letter-spacing: 2.5px; text-transform: uppercase; color: var(--ink3); }
+  .eq-difficulty {
+    font-family: "DM Mono", monospace;
+    font-size: 0.62rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #fff;
+    background: var(--teal);
+    padding: 0.3rem 0.55rem;
+    white-space: nowrap;
+  }
+  .eq-difficulty.facil { background: var(--green); }
+  .eq-difficulty.medio { background: var(--gold); color: var(--ink); }
+  .eq-difficulty.reto { background: var(--accent); }
+  .eq-context { color: var(--ink2); padding-left: 0.75rem; margin-bottom: 1.3rem; line-height: 1.65; font-size: 0.95rem; }
   .eq-context strong { color: var(--ink); }
-
-  .equation-row { display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-wrap: wrap; padding: 1rem; }
+  .equation-row { display: flex; align-items: center; justify-content: center; gap: 0.52rem; flex-wrap: wrap; padding: 1rem 0.5rem 1.2rem; min-height: 96px; }
   .eq-part { display: flex; align-items: center; gap: 0.4rem; }
   .coef-input {
-    width: 52px; height: 52px; border: 2px solid var(--border); background: var(--bg);
-    font-family: 'Fraunces', serif; font-size: 1.4rem; font-weight: 700; text-align: center;
-    color: var(--ink); transition: border-color 0.2s, background 0.2s; -moz-appearance: textfield;
+    width: 54px;
+    height: 54px;
+    border: 2px solid var(--border);
+    background: var(--bg);
+    font-family: "Fraunces", serif;
+    font-size: 1.35rem;
+    font-weight: 900;
+    text-align: center;
+    color: var(--ink);
+    transition: border-color 0.2s, background 0.2s, color 0.2s;
+    -moz-appearance: textfield;
   }
-  .coef-input::-webkit-outer-spin-button, .coef-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .coef-input::-webkit-outer-spin-button, .coef-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   .coef-input:focus { outline: none; border-color: var(--accent); background: #fff; }
   .coef-input.correct { border-color: var(--green); background: var(--green-light); color: var(--green); }
   .coef-input.wrong { border-color: var(--accent); background: var(--red-light); color: var(--accent); }
   .coef-input:disabled { opacity: 1; }
+  .molecule { font-family: "DM Mono", monospace; font-size: 1.08rem; font-weight: 500; color: var(--ink); }
+  .molecule sub { font-size: 0.68em; vertical-align: sub; }
+  .eq-plus { font-family: "Fraunces", serif; font-size: 1.5rem; color: var(--ink3); }
+  .eq-arrow { font-size: 1.6rem; color: var(--accent); padding: 0 0.55rem; font-weight: 900; }
 
-  .molecule { font-family: 'DM Mono', monospace; font-size: 1.1rem; font-weight: 500; color: var(--ink); }
-  .molecule sub { font-size: 0.65em; vertical-align: sub; }
-  .eq-plus { font-family: 'Fraunces', serif; font-size: 1.5rem; color: var(--ink3); padding: 0 0.2rem; }
-  .eq-arrow { font-size: 1.4rem; color: var(--accent); padding: 0 0.6rem; font-weight: 700; }
-
-  .atom-counter { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.5rem; padding: 0 1rem 1rem; }
-  .atom-card { background: var(--bg2); padding: 0.5rem 0.75rem; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
-  .atom-symbol { font-family: 'DM Mono', monospace; font-size: 0.8rem; color: var(--ink2); }
+  .atom-counter { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 0.55rem; padding-left: 0.75rem; }
+  .atom-card {
+    background: var(--bg2);
+    padding: 0.58rem 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid var(--border);
+    min-height: 42px;
+    opacity: 0;
+  }
+  .atom-symbol { font-family: "DM Mono", monospace; font-size: 0.8rem; color: var(--ink2); }
   .atom-counts { display: flex; gap: 0.5rem; align-items: center; }
-  .atom-side { font-family: 'Fraunces', serif; font-size: 0.9rem; font-weight: 700; }
+  .atom-side { font-family: "Fraunces", serif; font-size: 0.95rem; font-weight: 900; }
   .atom-divider { color: var(--ink3); font-size: 0.8rem; }
   .atom-card.balanced .atom-side { color: var(--green); }
   .atom-card.unbalanced .atom-side { color: var(--accent); }
+  .atom-card.just-balanced {
+    animation: atomPop 0.44s ease-out;
+    border-color: rgba(45, 106, 79, 0.42);
+  }
+  @keyframes atomPop {
+    0% { transform: scale(1); }
+    45% { transform: scale(1.06); background: var(--green-light); }
+    100% { transform: scale(1); }
+  }
 
-  .hint-box { background: #fef9ed; border: 1px solid var(--accent2); padding: 1rem 1.25rem; margin: 0 0 1.5rem; font-size: 0.9rem; color: #6b4a00; line-height: 1.6; display: none; transform-origin: top; }
-  .hint-box.show { display: block; }
-  .hint-box strong { color: #3d2a00; }
+  .panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+  .hint-box, .learn-box, .feedback {
+    display: none;
+    line-height: 1.6;
+    font-size: 0.92rem;
+    opacity: 0;
+  }
+  .hint-box.show, .learn-box.show, .feedback.show { display: block; }
+  .hint-box { background: #fff6dc; border: 1px solid var(--gold); color: #664a00; padding: 1rem 1.15rem; transform-origin: top; }
+  .learn-box { background: var(--blue-light); border: 1px solid rgba(22, 123, 117, 0.35); color: #164d4b; padding: 1rem 1.15rem; }
+  .feedback { padding: 1rem 1.15rem; border-left: 5px solid; margin-bottom: 1rem; }
+  .feedback.ok { background: var(--green-light); border-color: var(--green); color: #1b4d32; }
+  .feedback.fail { background: var(--red-light); border-color: var(--accent); color: #6c1e0d; }
+  .eq-balanced { font-family: "DM Mono", monospace; font-size: 0.84rem; background: rgba(255,255,255,0.66); padding: 0.45rem 0.7rem; margin-top: 0.55rem; display: inline-block; }
+  .controls { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .solution-btn { display: none; }
 
-  .controls { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 2rem; }
-  .btn { font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.9rem; padding: 0.7rem 1.5rem; border: 1.5px solid var(--ink); cursor: pointer; letter-spacing: 0.3px; transition: background 0.2s; }
-  .btn-check { background: var(--ink); color: var(--bg); }
-  .btn-check:hover { background: #2d1f08; }
-  .btn-hint { background: transparent; color: var(--ink); }
-  .btn-hint:hover { background: var(--bg2); }
-  .btn-next { background: var(--accent); color: #fff; border-color: var(--accent); display: none; }
-  .btn-next:hover { background: #a83518; }
-  .btn-reset { background: transparent; color: var(--ink3); border-color: var(--border); font-size: 0.8rem; padding: 0.7rem 1rem; }
-  .btn-reset:hover { border-color: var(--ink); color: var(--ink); }
-
-  .feedback { padding: 1rem 1.25rem; margin-bottom: 1.5rem; font-size: 0.9rem; line-height: 1.7; display: none; border-left: 4px solid; opacity: 0; }
-  .feedback.show { display: block; }
-  .feedback.ok { background: var(--green-light); border-color: var(--green); color: #1a4a30; }
-  .feedback.fail { background: var(--red-light); border-color: var(--accent); color: #6b1a0a; }
-  .feedback .eq-balanced { font-family: 'DM Mono', monospace; font-size: 0.85rem; background: rgba(255,255,255,0.6); padding: 0.4rem 0.75rem; margin-top: 0.5rem; display: inline-block; }
-
-  /* INTRO */
-  #intro-screen { text-align: center; padding: 3rem 1rem; }
-  .intro-headline { font-family: 'Fraunces', serif; font-size: 3rem; font-weight: 900; color: var(--ink); letter-spacing: -2px; line-height: 1.1; margin-bottom: 1rem; }
-  .intro-headline .word { display: inline-block; overflow: hidden; }
-  .intro-headline .word-inner { display: inline-block; }
-  .intro-headline em { font-style: italic; color: var(--accent); }
-  .intro-desc { font-size: 1rem; color: var(--ink2); max-width: 480px; margin: 0 auto 1.5rem; line-height: 1.7; opacity: 0; }
-  .badge-row { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2rem; }
-  .badge { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; padding: 0.3rem 0.75rem; border: 1px solid var(--border); color: var(--ink3); text-transform: uppercase; opacity: 0; transform: translateY(8px); }
-  .intro-rules { background: var(--card); border: 1.5px solid var(--ink); padding: 1.5rem; max-width: 480px; margin: 0 auto 2rem; text-align: left; opacity: 0; }
-  .intro-rules h3 { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 3px; text-transform: uppercase; color: var(--ink3); margin-bottom: 1rem; }
-  .rule { display: flex; gap: 0.75rem; align-items: flex-start; margin-bottom: 0.75rem; font-size: 0.9rem; color: var(--ink2); line-height: 1.5; }
-  .rule-num { font-family: 'Fraunces', serif; font-weight: 700; color: var(--accent); font-size: 1.1rem; flex-shrink: 0; }
-  #btn-start { opacity: 0; transform: translateY(10px); font-size: 1rem; padding: 0.9rem 2.5rem; }
-
-  /* RESULT */
-  #result-screen { display: none; text-align: center; padding: 3rem 1rem; }
-  #result-screen.show { display: block; }
-  .result-big { font-family: 'Fraunces', serif; font-size: 5rem; font-weight: 900; color: var(--ink); letter-spacing: -4px; line-height: 1; margin-bottom: 0.5rem; opacity: 0; }
+  #result-screen { text-align: center; padding: 2.4rem 0; }
+  .result-big {
+    font-family: "Fraunces", serif;
+    font-size: clamp(4rem, 12vw, 7rem);
+    font-weight: 900;
+    color: var(--ink);
+    line-height: 0.95;
+    margin-bottom: 0.7rem;
+    opacity: 0;
+    letter-spacing: 0;
+  }
   .result-big span { color: var(--accent); }
-  .result-tagline { font-family: 'DM Mono', monospace; font-size: 0.75rem; letter-spacing: 3px; text-transform: uppercase; color: var(--ink3); margin-bottom: 2rem; opacity: 0; }
-  .result-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; max-width: 500px; margin: 0 auto 2rem; }
-  .r-card { background: var(--card); border: 1.5px solid var(--ink); padding: 1.25rem; opacity: 0; transform: translateY(20px); }
-  .r-card-val { font-family: 'Fraunces', serif; font-size: 2.2rem; font-weight: 700; color: var(--ink); }
-  .r-card-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 2px; text-transform: uppercase; color: var(--ink3); margin-top: 4px; }
-  .result-msg { font-size: 1rem; color: var(--ink2); max-width: 480px; margin: 0 auto 2rem; line-height: 1.7; opacity: 0; }
-  .btn-restart { font-family: 'Fraunces', serif; font-size: 1.1rem; font-weight: 700; background: var(--ink); color: var(--bg); border: none; padding: 1rem 3rem; cursor: pointer; letter-spacing: -0.5px; transition: background 0.2s; opacity: 0; }
-  .btn-restart:hover { background: var(--accent); }
+  .result-tagline { font-family: "DM Mono", monospace; font-size: 0.74rem; letter-spacing: 3px; text-transform: uppercase; color: var(--ink3); margin-bottom: 1.6rem; opacity: 0; }
+  .result-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.8rem; max-width: 760px; margin: 0 auto 1.5rem; }
+  .r-card { background: var(--card); border: 1.5px solid var(--ink); padding: 1.15rem 0.75rem; opacity: 0; transform: translateY(20px); box-shadow: 0 14px 34px rgba(49, 33, 14, 0.08); }
+  .r-card-val { font-family: "Fraunces", serif; font-size: 2.1rem; font-weight: 900; color: var(--ink); line-height: 1; }
+  .r-card-label { font-family: "DM Mono", monospace; font-size: 0.58rem; letter-spacing: 1.8px; text-transform: uppercase; color: var(--ink3); margin-top: 0.4rem; }
+  .result-msg { font-size: 1rem; color: var(--ink2); max-width: 620px; margin: 0 auto 1.5rem; line-height: 1.7; opacity: 0; }
+  .medal-row {
+    max-width: 840px;
+    margin: 0 auto 1.4rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.6rem;
+    opacity: 0;
+  }
+  .medal {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    border: 1.5px solid var(--ink);
+    background: rgba(255, 253, 248, 0.8);
+    padding: 0.6rem 0.85rem;
+    box-shadow: 0 10px 24px rgba(49, 33, 14, 0.08);
+  }
+  .medal-mark {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--gold);
+    color: var(--ink);
+    font-family: "Fraunces", serif;
+    font-weight: 900;
+  }
+  .medal-text { font-weight: 800; color: var(--ink); font-size: 0.88rem; }
+  .review-list { max-width: 760px; margin: 0 auto 1.5rem; display: grid; gap: 0.5rem; text-align: left; opacity: 0; }
+  .review-item { display: grid; grid-template-columns: 84px 1fr auto; gap: 0.7rem; align-items: center; border: 1px solid var(--border); background: rgba(255,253,248,0.78); padding: 0.65rem 0.8rem; }
+  .review-tag { font-family: "DM Mono", monospace; font-size: 0.58rem; letter-spacing: 1.4px; text-transform: uppercase; color: var(--ink3); }
+  .review-title { font-weight: 700; color: var(--ink2); }
+  .review-points { font-family: "Fraunces", serif; font-weight: 900; color: var(--green); }
+  .particle { position: fixed; pointer-events: none; font-size: 1.15rem; z-index: 999; }
+  .reaction-flash {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 800;
+    background: radial-gradient(circle at center, rgba(255,255,255,0.74), rgba(217,79,40,0.12) 38%, transparent 68%);
+    opacity: 0;
+  }
 
-  /* PARTICLES */
-  .particle { position: fixed; pointer-events: none; font-size: 1rem; z-index: 999; }
-
-  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
-  .shake { animation: shake 0.35s ease; }
+  @media (max-width: 820px) {
+    header { align-items: flex-start; flex-direction: column; }
+    .header-stats { width: 100%; }
+    .stat-pill { flex: 1; text-align: left; }
+    .intro-layout { grid-template-columns: 1fr; }
+    .lab-stage { min-height: 320px; order: -1; }
+    .beaker { width: min(70vw, 250px); }
+    .setup-row { grid-template-columns: 1fr; gap: 0.55rem; }
+    .game-top { grid-template-columns: 1fr; }
+    .round-meta { justify-content: flex-start; }
+    .panel-grid { grid-template-columns: 1fr; }
+    .result-grid { grid-template-columns: repeat(2, 1fr); }
+    .review-item { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 520px) {
+    .wrapper { padding: 1rem 0.85rem 3rem; }
+    .header-stats { flex-direction: column; }
+    .equation-row { justify-content: flex-start; }
+    .coef-input { width: 48px; height: 48px; font-size: 1.18rem; }
+    .molecule { font-size: 1rem; }
+    .controls .btn { flex: 1 1 100%; }
+    .result-grid { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
+<div class="formula-field" aria-hidden="true" id="formula-field"></div>
+<div class="reaction-flash" id="reaction-flash"></div>
 <div class="wrapper">
   <header id="main-header">
     <div class="logo">
       <div class="logo-name" id="logo-name">Reactor<span>Q</span></div>
       <div class="logo-byline" id="logo-byline">by @edwaar</div>
-      <div class="logo-sub" id="logo-sub">Balanceador · Química Basica UIS · Prof. María Mercedes González Bernal</div>
+      <div class="logo-sub" id="logo-sub">Balanceador - Química Básica UIS - Prof. María Mercedes González Bernal</div>
     </div>
-    <div class="header-score" id="header-score">
-      <div class="score-label">Puntuación</div>
-      <div class="score-val" id="score-display">0</div>
+    <div class="header-stats" id="header-stats">
+      <div class="stat-pill">
+        <div class="stat-label">Puntos</div>
+        <div class="stat-val" id="score-display">0</div>
+      </div>
+      <div class="stat-pill">
+        <div class="stat-label">Racha</div>
+        <div class="stat-val" id="streak-display">0</div>
+      </div>
     </div>
   </header>
 
-  <div id="intro-screen">
-    <div class="intro-headline">
-      <div class="word"><span class="word-inner">Balancea.</span></div><br>
-      <div class="word"><em class="word-inner">Reacciona.</em></div><br>
-      <div class="word"><span class="word-inner">Domina.</span></div>
+  <section id="intro-screen" class="screen active">
+    <div class="intro-layout">
+      <div class="intro-copy">
+        <h1 class="intro-headline">
+          <span class="word"><span class="word-inner">Balancea.</span></span>
+          <span class="word"><em class="word-inner">Reacciona.</em></span>
+          <span class="word"><span class="word-inner">Domina.</span></span>
+        </h1>
+        <p class="intro-desc">Más de 100 ecuaciones posibles de química básica. Ajusta coeficientes, conserva la masa y gana puntos por precisión, racha y velocidad.</p>
+        <div class="badge-row">
+          <span class="badge">Neutralización</span>
+          <span class="badge">Redox</span>
+          <span class="badge">Combustión</span>
+          <span class="badge">Síntesis</span>
+          <span class="badge">Doble sustitución</span>
+        </div>
+      </div>
+      <div class="lab-stage" aria-hidden="true">
+        <div class="lab-orbit" id="lab-orbit">
+          <div class="molecule-dot dot-a">H</div>
+          <div class="molecule-dot dot-b">O</div>
+          <div class="molecule-dot dot-c">Na</div>
+          <div class="molecule-dot dot-d">Cl</div>
+        </div>
+        <div class="beaker" id="beaker">
+          <div class="liquid">
+            <span class="bubble"></span>
+            <span class="bubble"></span>
+            <span class="bubble"></span>
+            <span class="bubble"></span>
+          </div>
+          <div class="beaker-label">Q</div>
+        </div>
+      </div>
     </div>
-    <p class="intro-desc">6 ecuaciones químicas de redox y ácido-base. Ingresa los coeficientes correctos para que el número de átomos sea igual en ambos lados.</p>
-    <div class="badge-row">
-      <span class="badge">Redox</span>
-      <span class="badge">Ácido-Base</span>
-      <span class="badge">Neutralización</span>
-      <span class="badge">Óxido-Reducción</span>
-    </div>
-    <div class="intro-rules" id="intro-rules">
-      <h3>Cómo jugar</h3>
-      <div class="rule"><span class="rule-num">1</span><span>Observa la ecuación química y el conteo de átomos en tiempo real.</span></div>
-      <div class="rule"><span class="rule-num">2</span><span>Escribe los coeficientes en las casillas blancas. Deja vacío o escribe 1 si el coeficiente es 1.</span></div>
-      <div class="rule"><span class="rule-num">3</span><span>Presiona <strong>Verificar</strong> cuando creas que está balanceada. Tienes una pista disponible por ecuación.</span></div>
-      <div class="rule"><span class="rule-num">4</span><span>Acierto al primer intento = 100 pts. Con pista = 60 pts. Segundo intento = 40 pts.</span></div>
-    </div>
-    <button class="btn btn-check" id="btn-start" onclick="startGame()">Comenzar →</button>
-  </div>
 
-  <div id="game-screen" style="display:none">
-    <div class="progress-row" id="progress-row"></div>
+    <div class="setup-panel" id="setup-panel">
+      <div class="setup-row">
+        <div class="setup-label">Dificultad</div>
+        <div class="segmented" role="group" aria-label="Dificultad">
+          <button class="seg-btn active" data-setting="difficulty" data-value="mixta">Mixta</button>
+          <button class="seg-btn" data-setting="difficulty" data-value="facil">Fácil</button>
+          <button class="seg-btn" data-setting="difficulty" data-value="medio">Media</button>
+          <button class="seg-btn" data-setting="difficulty" data-value="reto">Reto</button>
+        </div>
+      </div>
+      <div class="setup-row">
+        <div class="setup-label">Ronda</div>
+        <div class="segmented" role="group" aria-label="Cantidad de ecuaciones">
+          <button class="seg-btn active" data-setting="roundSize" data-value="6">6 ecuaciones</button>
+          <button class="seg-btn" data-setting="roundSize" data-value="8">8 ecuaciones</button>
+          <button class="seg-btn" data-setting="roundSize" data-value="10">10 ecuaciones</button>
+        </div>
+      </div>
+      <div class="setup-row">
+        <div class="setup-label">Modo</div>
+        <div class="segmented" role="group" aria-label="Modo de juego">
+          <button class="seg-btn toggle-btn" id="timer-toggle" data-setting="timed" data-value="true">Contrarreloj apagado</button>
+        </div>
+      </div>
+      <div class="start-row">
+        <button class="btn btn-secondary" id="btn-demo" onclick="quickDemo()">Partida rápida</button>
+        <button class="btn btn-primary" id="btn-start" onclick="startGame()">Comenzar</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="game-screen" class="screen">
+    <div class="game-top">
+      <div class="progress-row" id="progress-row"></div>
+      <div class="round-meta">
+        <span class="meta-chip" id="difficulty-chip">Mixta</span>
+        <span class="meta-chip" id="round-chip">1/6</span>
+        <span class="meta-chip" id="timer-chip">Sin tiempo</span>
+      </div>
+      <div class="timer-track" id="timer-track">
+        <div class="timer-fill" id="timer-fill"></div>
+      </div>
+    </div>
+
     <div class="eq-container" id="eq-container">
-      <div class="eq-label" id="eq-label"></div>
+      <div class="eq-head">
+        <div class="eq-label" id="eq-label"></div>
+        <div class="eq-difficulty" id="eq-difficulty"></div>
+      </div>
       <div class="eq-context" id="eq-context"></div>
       <div class="equation-row" id="equation-row"></div>
       <div class="atom-counter" id="atom-counter"></div>
     </div>
-    <div class="hint-box" id="hint-box"></div>
+
+    <div class="panel-grid">
+      <div class="hint-box" id="hint-box"></div>
+      <div class="learn-box" id="learn-box"></div>
+    </div>
     <div class="feedback" id="feedback"></div>
     <div class="controls">
-      <button class="btn btn-check" id="btn-check" onclick="checkAnswer()">Verificar</button>
-      <button class="btn btn-hint" id="btn-hint" onclick="showHint()">💡 Pista</button>
-      <button class="btn btn-next" id="btn-next" onclick="nextQuestion()">Siguiente →</button>
-      <button class="btn btn-reset" onclick="resetInputs()">↺ Reiniciar</button>
+      <button class="btn btn-primary" id="btn-check" onclick="checkAnswer()">Verificar</button>
+      <button class="btn btn-secondary" id="btn-hint" onclick="showHint()">Pista</button>
+      <button class="btn btn-secondary solution-btn" id="btn-solution" onclick="revealSolution()">Ver solución</button>
+      <button class="btn btn-next" id="btn-next" onclick="nextQuestion()">Siguiente</button>
+      <button class="btn btn-ghost" id="btn-reset" onclick="resetInputs()">Reiniciar intento</button>
     </div>
-  </div>
+  </section>
 
-  <div id="result-screen">
+  <section id="result-screen" class="screen">
     <div class="result-big" id="r-big"></div>
     <div class="result-tagline" id="r-tagline"></div>
     <div class="result-grid">
-      <div class="r-card" id="rc-1"><div class="r-card-val" id="r-score">0</div><div class="r-card-label">Puntos</div></div>
-      <div class="r-card" id="rc-2"><div class="r-card-val" id="r-correct">0/6</div><div class="r-card-label">Correctas</div></div>
-      <div class="r-card" id="rc-3"><div class="r-card-val" id="r-hints">0</div><div class="r-card-label">Pistas usadas</div></div>
+      <div class="r-card"><div class="r-card-val" id="r-score">0</div><div class="r-card-label">Puntos</div></div>
+      <div class="r-card"><div class="r-card-val" id="r-correct">0/6</div><div class="r-card-label">Correctas</div></div>
+      <div class="r-card"><div class="r-card-val" id="r-hints">0</div><div class="r-card-label">Pistas</div></div>
+      <div class="r-card"><div class="r-card-val" id="r-streak">0</div><div class="r-card-label">Mejor racha</div></div>
     </div>
     <p class="result-msg" id="r-msg"></p>
-    <button class="btn-restart" id="btn-restart" onclick="restartGame()">Jugar de nuevo</button>
-  </div>
+    <div class="medal-row" id="medal-row"></div>
+    <div class="review-list" id="review-list"></div>
+    <button class="btn btn-primary" id="btn-restart" onclick="restartGame()">Jugar de nuevo</button>
+  </section>
 </div>
 
 <script>
-const EQUATIONS = [
+const QUESTION_BANK = [
   {
-    label: "Ecuación 1 · Neutralización ácido-base",
-    context: "El ácido clorhídrico reacciona con el hidróxido de sodio en una reacción de <strong>neutralización</strong>. Cada mol de HCl reacciona con exactamente un mol de NaOH para producir agua y sal.",
-    reactants: [{ coef:1, formula:"HCl", atoms:{H:1,Cl:1} }, { coef:1, formula:"NaOH", atoms:{Na:1,O:1,H:1} }],
-    products:  [{ coef:1, formula:"NaCl", atoms:{Na:1,Cl:1} }, { coef:1, formula:"H₂O", atoms:{H:2,O:1} }],
-    hint: "Cuenta los átomos de H: en los reactivos tienes 1 (del HCl) + 1 (del NaOH) = 2. En los productos hay 2 H en el H₂O. Todos los coeficientes son 1.",
-    displayReactants: ["HCl","NaOH"], displayProducts: ["NaCl","H<sub>2</sub>O"]
+    id: "neutralizacion-hcl-naoh",
+    label: "Neutralización ácido-base",
+    topic: "Neutralización",
+    difficulty: "facil",
+    context: "El ácido clorhídrico reacciona con hidróxido de sodio para formar una sal y agua. Es una neutralización 1:1 muy útil para entender la conservación de la masa.",
+    reactants: [{ coef:1, formula:"HCl", atoms:{H:1, Cl:1} }, { coef:1, formula:"NaOH", atoms:{Na:1, O:1, H:1} }],
+    products: [{ coef:1, formula:"NaCl", atoms:{Na:1, Cl:1} }, { coef:1, formula:"H2O", atoms:{H:2, O:1} }],
+    displayReactants: ["HCl", "NaOH"],
+    displayProducts: ["NaCl", "H<sub>2</sub>O"],
+    hint: "Suma los hidrógenos del lado de reactivos: HCl aporta 1 y NaOH aporta 1. En productos, el agua tiene 2.",
+    explanation: "La neutralización produce NaCl y H2O. Todos los átomos quedan iguales con coeficientes 1, porque ya hay 2 H, 1 O, 1 Na y 1 Cl en ambos lados."
   },
   {
-    label: "Ecuación 2 · Ácido sulfúrico + hidróxido",
-    context: "El ácido sulfúrico (diprótido) reacciona con el hidróxido de sodio. Como H₂SO₄ tiene <strong>2 protones</strong> para ceder, necesita el doble de NaOH para neutralizarse completamente.",
-    reactants: [{ coef:1, formula:"H2SO4", atoms:{H:2,S:1,O:4} }, { coef:2, formula:"NaOH", atoms:{Na:1,O:1,H:1} }],
-    products:  [{ coef:1, formula:"Na2SO4", atoms:{Na:2,S:1,O:4} }, { coef:2, formula:"H2O", atoms:{H:2,O:1} }],
-    hint: "El H₂SO₄ tiene 2 hidrógenos ácidos. Necesitas 2 NaOH para neutralizarlos. Productos: 1 Na₂SO₄ y 2 H₂O.",
-    displayReactants: ["H<sub>2</sub>SO<sub>4</sub>","NaOH"], displayProducts: ["Na<sub>2</sub>SO<sub>4</sub>","H<sub>2</sub>O"]
+    id: "acido-sulfurico-naoh",
+    label: "Ácido sulfúrico + hidróxido",
+    topic: "Ácido-base",
+    difficulty: "medio",
+    context: "El H2SO4 es diprótico: puede ceder dos protones. Por eso necesita dos unidades de NaOH para neutralizarse completamente.",
+    reactants: [{ coef:1, formula:"H2SO4", atoms:{H:2, S:1, O:4} }, { coef:2, formula:"NaOH", atoms:{Na:1, O:1, H:1} }],
+    products: [{ coef:1, formula:"Na2SO4", atoms:{Na:2, S:1, O:4} }, { coef:2, formula:"H2O", atoms:{H:2, O:1} }],
+    displayReactants: ["H<sub>2</sub>SO<sub>4</sub>", "NaOH"],
+    displayProducts: ["Na<sub>2</sub>SO<sub>4</sub>", "H<sub>2</sub>O"],
+    hint: "Empieza por el sodio: Na2SO4 exige 2 Na, así que necesitas 2 NaOH.",
+    explanation: "Al usar 2 NaOH se obtienen 2 sodios para Na2SO4 y 4 hidrógenos totales, suficientes para formar 2 H2O."
   },
   {
-    label: "Ecuación 3 · Oxidación del hierro (herrumbre)",
-    context: "La corrosión del hierro es una reacción de <strong>oxidación-reducción</strong>: el Fe se oxida (pierde electrones) y el O₂ se reduce (gana electrones). El resultado es el óxido de hierro III.",
+    id: "herrumbre",
+    label: "Oxidación del hierro",
+    topic: "Redox",
+    difficulty: "medio",
+    context: "La formación de óxido de hierro(III) es una reacción redox: el hierro se oxida y el oxígeno se reduce.",
     reactants: [{ coef:4, formula:"Fe", atoms:{Fe:1} }, { coef:3, formula:"O2", atoms:{O:2} }],
-    products:  [{ coef:2, formula:"Fe2O3", atoms:{Fe:2,O:3} }],
-    hint: "Cada Fe pierde 3e⁻ (→Fe³⁺), cada O₂ gana 4e⁻ total. Para balancear electrones: 4 Fe y 3 O₂ → 2 Fe₂O₃.",
-    displayReactants: ["Fe","O<sub>2</sub>"], displayProducts: ["Fe<sub>2</sub>O<sub>3</sub>"]
+    products: [{ coef:2, formula:"Fe2O3", atoms:{Fe:2, O:3} }],
+    displayReactants: ["Fe", "O<sub>2</sub>"],
+    displayProducts: ["Fe<sub>2</sub>O<sub>3</sub>"],
+    hint: "Fe2O3 tiene 2 Fe y 3 O. Duplica el producto para tener 4 Fe y 6 O; luego ajusta reactivos.",
+    explanation: "Con 2 Fe2O3 hay 4 Fe y 6 O. Eso se iguala con 4 Fe y 3 O2."
   },
   {
-    label: "Ecuación 4 · Reducción del permanganato (redox)",
-    context: "En medio ácido, el permanganato de potasio (KMnO₄) oxida al ácido clorhídrico. El Mn reduce su número de oxidación de <strong>+7 a +2</strong>.",
-    reactants: [{ coef:2, formula:"KMnO4", atoms:{K:1,Mn:1,O:4} }, { coef:16, formula:"HCl", atoms:{H:1,Cl:1} }],
-    products:  [{ coef:2, formula:"KCl", atoms:{K:1,Cl:1} }, { coef:2, formula:"MnCl2", atoms:{Mn:1,Cl:2} }, { coef:5, formula:"Cl2", atoms:{Cl:2} }, { coef:8, formula:"H2O", atoms:{H:2,O:1} }],
-    hint: "Coeficientes: 2 KMnO₄ + 16 HCl → 2 KCl + 2 MnCl₂ + 5 Cl₂ + 8 H₂O. El Mn pasa de +7 a +2 (gana 5e⁻ × 2 = 10e⁻).",
-    displayReactants: ["KMnO<sub>4</sub>","HCl"], displayProducts: ["KCl","MnCl<sub>2</sub>","Cl<sub>2</sub>","H<sub>2</sub>O"]
+    id: "permanganato-hcl",
+    label: "Permanganato en medio ácido",
+    topic: "Redox",
+    difficulty: "reto",
+    context: "En medio ácido, el permanganato de potasio oxida al ácido clorhídrico. El manganeso pasa de +7 a +2, así que es una redox exigente.",
+    reactants: [{ coef:2, formula:"KMnO4", atoms:{K:1, Mn:1, O:4} }, { coef:16, formula:"HCl", atoms:{H:1, Cl:1} }],
+    products: [{ coef:2, formula:"KCl", atoms:{K:1, Cl:1} }, { coef:2, formula:"MnCl2", atoms:{Mn:1, Cl:2} }, { coef:5, formula:"Cl2", atoms:{Cl:2} }, { coef:8, formula:"H2O", atoms:{H:2, O:1} }],
+    displayReactants: ["KMnO<sub>4</sub>", "HCl"],
+    displayProducts: ["KCl", "MnCl<sub>2</sub>", "Cl<sub>2</sub>", "H<sub>2</sub>O"],
+    hint: "Fija 2 KMnO4 para tener 8 oxígenos; eso obliga a 8 H2O y luego a 16 HCl.",
+    explanation: "Los 8 oxígenos de 2 KMnO4 forman 8 H2O. Para esas 8 aguas se necesitan 16 H, que vienen de 16 HCl."
   },
   {
-    label: "Ecuación 5 · Descomposición del agua oxigenada",
-    context: "El peróxido de hidrógeno (H₂O₂) se descompone espontáneamente. Esta es una reacción de <strong>dismutación (auto-redox)</strong>: el mismo elemento (O) se oxida y se reduce simultáneamente.",
-    reactants: [{ coef:2, formula:"H2O2", atoms:{H:2,O:2} }],
-    products:  [{ coef:2, formula:"H2O", atoms:{H:2,O:1} }, { coef:1, formula:"O2", atoms:{O:2} }],
-    hint: "2 H₂O₂ → 2 H₂O + O₂. El O en H₂O₂ tiene número de oxidación -1; en H₂O es -2 (se reduce) y en O₂ es 0 (se oxida).",
-    displayReactants: ["H<sub>2</sub>O<sub>2</sub>"], displayProducts: ["H<sub>2</sub>O","O<sub>2</sub>"]
+    id: "peroxido-hidrogeno",
+    label: "Descomposición del agua oxigenada",
+    topic: "Dismutación",
+    difficulty: "facil",
+    context: "El peróxido de hidrógeno se descompone en agua y oxígeno. El oxígeno se oxida y se reduce a la vez.",
+    reactants: [{ coef:2, formula:"H2O2", atoms:{H:2, O:2} }],
+    products: [{ coef:2, formula:"H2O", atoms:{H:2, O:1} }, { coef:1, formula:"O2", atoms:{O:2} }],
+    displayReactants: ["H<sub>2</sub>O<sub>2</sub>"],
+    displayProducts: ["H<sub>2</sub>O", "O<sub>2</sub>"],
+    hint: "Usa 2 H2O2 para tener 4 H. Eso permite formar 2 H2O.",
+    explanation: "Dos moléculas de H2O2 tienen 4 H y 4 O. En productos, 2 H2O usan 4 H y 2 O; el resto forma O2."
   },
   {
-    label: "Ecuación 6 · Combustión del etanol",
-    context: "La combustión completa del etanol (C₂H₅OH) es una reacción de <strong>oxidación</strong> donde el carbono se oxida completamente a CO₂.",
-    reactants: [{ coef:1, formula:"C2H5OH", atoms:{C:2,H:6,O:1} }, { coef:3, formula:"O2", atoms:{O:2} }],
-    products:  [{ coef:2, formula:"CO2", atoms:{C:1,O:2} }, { coef:3, formula:"H2O", atoms:{H:2,O:1} }],
-    hint: "Balancea primero C: 2 CO₂. Luego H: 6H → 3 H₂O. Oxígeno: productos tienen 4+3=7 O. Reactivos: 1 + x·2 = 7 → x=3.",
-    displayReactants: ["C<sub>2</sub>H<sub>5</sub>OH","O<sub>2</sub>"], displayProducts: ["CO<sub>2</sub>","H<sub>2</sub>O"]
+    id: "etanol-combustion",
+    label: "Combustión del etanol",
+    topic: "Combustión",
+    difficulty: "medio",
+    context: "El etanol se quema completamente para producir CO2 y H2O. En combustiones, conviene balancear C, luego H y dejar O para el final.",
+    reactants: [{ coef:1, formula:"C2H5OH", atoms:{C:2, H:6, O:1} }, { coef:3, formula:"O2", atoms:{O:2} }],
+    products: [{ coef:2, formula:"CO2", atoms:{C:1, O:2} }, { coef:3, formula:"H2O", atoms:{H:2, O:1} }],
+    displayReactants: ["C<sub>2</sub>H<sub>5</sub>OH", "O<sub>2</sub>"],
+    displayProducts: ["CO<sub>2</sub>", "H<sub>2</sub>O"],
+    hint: "Balancea C con 2 CO2 y H con 3 H2O. Después cuenta oxígenos.",
+    explanation: "Los productos tienen 2 CO2 y 3 H2O: en total 7 oxígenos. El etanol aporta 1, por eso se necesitan 3 O2."
+  },
+  {
+    id: "metano-combustion",
+    label: "Combustión del metano",
+    topic: "Combustión",
+    difficulty: "facil",
+    context: "El metano es el hidrocarburo más simple. Su combustión completa produce dióxido de carbono y agua.",
+    reactants: [{ coef:1, formula:"CH4", atoms:{C:1, H:4} }, { coef:2, formula:"O2", atoms:{O:2} }],
+    products: [{ coef:1, formula:"CO2", atoms:{C:1, O:2} }, { coef:2, formula:"H2O", atoms:{H:2, O:1} }],
+    displayReactants: ["CH<sub>4</sub>", "O<sub>2</sub>"],
+    displayProducts: ["CO<sub>2</sub>", "H<sub>2</sub>O"],
+    hint: "El CH4 tiene 4 H, así que necesitas 2 H2O.",
+    explanation: "Después de poner 2 H2O, los productos tienen 4 oxígenos en total. Eso exige 2 O2."
+  },
+  {
+    id: "propano-combustion",
+    label: "Combustión del propano",
+    topic: "Combustión",
+    difficulty: "medio",
+    context: "El propano es un combustible común. En su combustión completa, todo el carbono termina como CO2 y el hidrógeno como H2O.",
+    reactants: [{ coef:1, formula:"C3H8", atoms:{C:3, H:8} }, { coef:5, formula:"O2", atoms:{O:2} }],
+    products: [{ coef:3, formula:"CO2", atoms:{C:1, O:2} }, { coef:4, formula:"H2O", atoms:{H:2, O:1} }],
+    displayReactants: ["C<sub>3</sub>H<sub>8</sub>", "O<sub>2</sub>"],
+    displayProducts: ["CO<sub>2</sub>", "H<sub>2</sub>O"],
+    hint: "C3H8 obliga a 3 CO2 y 4 H2O. Luego cuenta oxígeno.",
+    explanation: "3 CO2 tienen 6 O y 4 H2O tienen 4 O. Son 10 oxígenos, equivalentes a 5 O2."
+  },
+  {
+    id: "sintesis-agua",
+    label: "Síntesis del agua",
+    topic: "Síntesis",
+    difficulty: "facil",
+    context: "Hidrógeno y oxígeno se combinan para formar agua. Es una síntesis simple pero perfecta para practicar moléculas diatómicas.",
+    reactants: [{ coef:2, formula:"H2", atoms:{H:2} }, { coef:1, formula:"O2", atoms:{O:2} }],
+    products: [{ coef:2, formula:"H2O", atoms:{H:2, O:1} }],
+    displayReactants: ["H<sub>2</sub>", "O<sub>2</sub>"],
+    displayProducts: ["H<sub>2</sub>O"],
+    hint: "Como O2 tiene 2 oxígenos, necesitas 2 H2O.",
+    explanation: "Dos aguas tienen 2 O y 4 H. Para conseguir 4 H se necesitan 2 H2."
+  },
+  {
+    id: "sintesis-amoniaco",
+    label: "Síntesis del amoníaco",
+    topic: "Síntesis",
+    difficulty: "medio",
+    context: "El proceso Haber combina nitrógeno e hidrógeno para producir amoníaco. Es clave en la fabricación de fertilizantes.",
+    reactants: [{ coef:1, formula:"N2", atoms:{N:2} }, { coef:3, formula:"H2", atoms:{H:2} }],
+    products: [{ coef:2, formula:"NH3", atoms:{N:1, H:3} }],
+    displayReactants: ["N<sub>2</sub>", "H<sub>2</sub>"],
+    displayProducts: ["NH<sub>3</sub>"],
+    hint: "N2 tiene 2 nitrógenos, así que coloca 2 NH3.",
+    explanation: "2 NH3 contienen 2 N y 6 H. Los 6 H se obtienen con 3 H2."
+  },
+  {
+    id: "carbonato-calcio-acido",
+    label: "Carbonato + ácido clorhídrico",
+    topic: "Ácido-carbonato",
+    difficulty: "medio",
+    context: "Los carbonatos reaccionan con ácidos liberando CO2. Es una reacción clásica de efervescencia.",
+    reactants: [{ coef:1, formula:"CaCO3", atoms:{Ca:1, C:1, O:3} }, { coef:2, formula:"HCl", atoms:{H:1, Cl:1} }],
+    products: [{ coef:1, formula:"CaCl2", atoms:{Ca:1, Cl:2} }, { coef:1, formula:"CO2", atoms:{C:1, O:2} }, { coef:1, formula:"H2O", atoms:{H:2, O:1} }],
+    displayReactants: ["CaCO<sub>3</sub>", "HCl"],
+    displayProducts: ["CaCl<sub>2</sub>", "CO<sub>2</sub>", "H<sub>2</sub>O"],
+    hint: "CaCl2 necesita 2 cloros, así que debes usar 2 HCl.",
+    explanation: "Con 2 HCl hay 2 Cl para CaCl2 y 2 H para H2O. El carbonato se reparte entre CO2 y H2O."
+  },
+  {
+    id: "precipitacion-bacl2-na2so4",
+    label: "Precipitación de sulfato de bario",
+    topic: "Doble sustitución",
+    difficulty: "facil",
+    context: "BaCl2 y Na2SO4 intercambian iones. Se forma BaSO4, un precipitado blanco muy insoluble.",
+    reactants: [{ coef:1, formula:"BaCl2", atoms:{Ba:1, Cl:2} }, { coef:1, formula:"Na2SO4", atoms:{Na:2, S:1, O:4} }],
+    products: [{ coef:1, formula:"BaSO4", atoms:{Ba:1, S:1, O:4} }, { coef:2, formula:"NaCl", atoms:{Na:1, Cl:1} }],
+    displayReactants: ["BaCl<sub>2</sub>", "Na<sub>2</sub>SO<sub>4</sub>"],
+    displayProducts: ["BaSO<sub>4</sub>", "NaCl"],
+    hint: "El Na2SO4 tiene 2 Na, así que en productos necesitas 2 NaCl.",
+    explanation: "Ba y SO4 ya están 1:1. Los 2 cloros de BaCl2 y los 2 sodios de Na2SO4 forman 2 NaCl."
+  },
+  {
+    id: "descomposicion-clorato",
+    label: "Descomposición del clorato de potasio",
+    topic: "Descomposición",
+    difficulty: "medio",
+    context: "El clorato de potasio se descompone al calentarse, liberando oxígeno. Es una reacción usada para obtener O2 en laboratorio.",
+    reactants: [{ coef:2, formula:"KClO3", atoms:{K:1, Cl:1, O:3} }],
+    products: [{ coef:2, formula:"KCl", atoms:{K:1, Cl:1} }, { coef:3, formula:"O2", atoms:{O:2} }],
+    displayReactants: ["KClO<sub>3</sub>"],
+    displayProducts: ["KCl", "O<sub>2</sub>"],
+    hint: "Busca que los oxígenos sean múltiplo de 2. Dos KClO3 dan 6 oxígenos.",
+    explanation: "2 KClO3 producen 2 KCl y dejan 6 oxígenos, que forman 3 O2."
+  },
+  {
+    id: "aluminio-oxido",
+    label: "Formación de óxido de aluminio",
+    topic: "Síntesis",
+    difficulty: "medio",
+    context: "El aluminio reacciona con oxígeno para formar óxido de aluminio. El producto tiene una proporción 2:3 entre Al y O.",
+    reactants: [{ coef:4, formula:"Al", atoms:{Al:1} }, { coef:3, formula:"O2", atoms:{O:2} }],
+    products: [{ coef:2, formula:"Al2O3", atoms:{Al:2, O:3} }],
+    displayReactants: ["Al", "O<sub>2</sub>"],
+    displayProducts: ["Al<sub>2</sub>O<sub>3</sub>"],
+    hint: "Duplica Al2O3 para tener 6 oxígenos; así puedes usar 3 O2.",
+    explanation: "2 Al2O3 contienen 4 Al y 6 O. Eso se iguala con 4 Al y 3 O2."
+  },
+  {
+    id: "zinc-hcl",
+    label: "Zinc + ácido clorhídrico",
+    topic: "Desplazamiento",
+    difficulty: "facil",
+    context: "El zinc desplaza al hidrógeno del ácido clorhídrico, formando cloruro de zinc y gas hidrógeno.",
+    reactants: [{ coef:1, formula:"Zn", atoms:{Zn:1} }, { coef:2, formula:"HCl", atoms:{H:1, Cl:1} }],
+    products: [{ coef:1, formula:"ZnCl2", atoms:{Zn:1, Cl:2} }, { coef:1, formula:"H2", atoms:{H:2} }],
+    displayReactants: ["Zn", "HCl"],
+    displayProducts: ["ZnCl<sub>2</sub>", "H<sub>2</sub>"],
+    hint: "ZnCl2 necesita 2 cloros. Eso obliga a 2 HCl.",
+    explanation: "Al poner 2 HCl quedan 2 Cl para ZnCl2 y 2 H para H2."
+  },
+  {
+    id: "fotosintesis",
+    label: "Fotosíntesis",
+    topic: "Bioquímica",
+    difficulty: "reto",
+    context: "La fotosíntesis resume cómo las plantas transforman CO2 y agua en glucosa y oxígeno usando energía luminosa.",
+    reactants: [{ coef:6, formula:"CO2", atoms:{C:1, O:2} }, { coef:6, formula:"H2O", atoms:{H:2, O:1} }],
+    products: [{ coef:1, formula:"C6H12O6", atoms:{C:6, H:12, O:6} }, { coef:6, formula:"O2", atoms:{O:2} }],
+    displayReactants: ["CO<sub>2</sub>", "H<sub>2</sub>O"],
+    displayProducts: ["C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>", "O<sub>2</sub>"],
+    hint: "La glucosa tiene 6 carbonos y 12 hidrógenos. Eso sugiere 6 CO2 y 6 H2O.",
+    explanation: "6 CO2 aportan 6 C y 12 O; 6 H2O aportan 12 H y 6 O. La glucosa usa 6 O y sobran 12 O para 6 O2."
+  },
+  {
+    id: "respiracion-glucosa",
+    label: "Respiración de la glucosa",
+    topic: "Bioquímica",
+    difficulty: "reto",
+    context: "La respiración celular oxida la glucosa con oxígeno para producir CO2, agua y energía.",
+    reactants: [{ coef:1, formula:"C6H12O6", atoms:{C:6, H:12, O:6} }, { coef:6, formula:"O2", atoms:{O:2} }],
+    products: [{ coef:6, formula:"CO2", atoms:{C:1, O:2} }, { coef:6, formula:"H2O", atoms:{H:2, O:1} }],
+    displayReactants: ["C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>", "O<sub>2</sub>"],
+    displayProducts: ["CO<sub>2</sub>", "H<sub>2</sub>O"],
+    hint: "La glucosa tiene 6 C y 12 H, por eso necesitas 6 CO2 y 6 H2O.",
+    explanation: "6 CO2 balancean el carbono y 6 H2O balancean el hidrógeno. En productos hay 18 O; la glucosa aporta 6 y faltan 12, que vienen de 6 O2."
+  },
+  {
+    id: "cobre-nitrato-plata",
+    label: "Cobre + nitrato de plata",
+    topic: "Desplazamiento",
+    difficulty: "medio",
+    context: "El cobre desplaza a la plata del nitrato de plata, formando nitrato de cobre(II) y plata metálica.",
+    reactants: [{ coef:1, formula:"Cu", atoms:{Cu:1} }, { coef:2, formula:"AgNO3", atoms:{Ag:1, N:1, O:3} }],
+    products: [{ coef:1, formula:"Cu(NO3)2", atoms:{Cu:1, N:2, O:6} }, { coef:2, formula:"Ag", atoms:{Ag:1} }],
+    displayReactants: ["Cu", "AgNO<sub>3</sub>"],
+    displayProducts: ["Cu(NO<sub>3</sub>)<sub>2</sub>", "Ag"],
+    hint: "Cu(NO3)2 contiene dos grupos nitrato, así que necesitas 2 AgNO3.",
+    explanation: "Dos AgNO3 entregan dos nitratos para Cu(NO3)2 y dejan dos átomos de plata metálica."
+  },
+  {
+    id: "acido-fosforico-koh",
+    label: "Ácido fosfórico + KOH",
+    topic: "Ácido-base",
+    difficulty: "reto",
+    context: "El ácido fosfórico es triprótico: puede ceder tres protones. En neutralización completa forma fosfato de potasio y agua.",
+    reactants: [{ coef:1, formula:"H3PO4", atoms:{H:3, P:1, O:4} }, { coef:3, formula:"KOH", atoms:{K:1, O:1, H:1} }],
+    products: [{ coef:1, formula:"K3PO4", atoms:{K:3, P:1, O:4} }, { coef:3, formula:"H2O", atoms:{H:2, O:1} }],
+    displayReactants: ["H<sub>3</sub>PO<sub>4</sub>", "KOH"],
+    displayProducts: ["K<sub>3</sub>PO<sub>4</sub>", "H<sub>2</sub>O"],
+    hint: "K3PO4 exige 3 potasios. Eso te dice cuántos KOH necesitas.",
+    explanation: "Tres KOH aportan 3 K para K3PO4 y, junto con los 3 H del ácido, forman 3 H2O."
   }
 ];
 
-let currentQ=0, score=0, hintsUsed=0, attempts=0;
-let hintUsedThisQ=false, answeredThisQ=false, correctCount=0;
-let displayedScore=0;
+const GENERATED_QUESTION_BANK = buildGeneratedQuestionBank();
+const FULL_QUESTION_BANK = [...QUESTION_BANK, ...GENERATED_QUESTION_BANK];
 
-// ── PAGE LOAD ANIMATION ──────────────────────────────────────────
-window.addEventListener('load', () => {
-  // Header slides in
-  anime({ targets: '#main-header', opacity:[0,1], translateY:[-20,0], duration:700, easing:'easeOutExpo' });
+const DIFFICULTY_LABELS = {
+  mixta: "Mixta",
+  facil: "Fácil",
+  medio: "Media",
+  reto: "Reto"
+};
 
-  // Logo letters stagger
-  const logoEl = document.getElementById('logo-name');
-  const text = logoEl.innerHTML;
-  logoEl.innerHTML = text.replace(/Reactor/, (m) =>
-    m.split('').map(c => `<span class="char">${c}</span>`).join('')
-  );
-  anime({
-    targets: '#logo-name .char',
-    translateY: [-30, 0], opacity: [0,1],
-    delay: anime.stagger(60, {start: 200}),
-    duration: 600, easing: 'easeOutBack'
+const state = {
+  difficulty: "mixta",
+  roundSize: 6,
+  timed: false,
+  currentQ: 0,
+  score: 0,
+  displayedScore: 0,
+  hintsUsed: 0,
+  correctCount: 0,
+  streak: 0,
+  maxStreak: 0,
+  attempts: 0,
+  answeredThisQ: false,
+  hintUsedThisQ: false,
+  solutionUsedThisQ: false,
+  questions: [],
+  review: [],
+  timer: null,
+  timeLeft: 0,
+  timerTotal: 0,
+  balancedMemory: new Set()
+};
+
+function motion(config) {
+  if (window.anime) return anime(config);
+  const targets = Array.isArray(config.targets) ? config.targets : [config.targets];
+  targets.forEach(target => {
+    const nodes = typeof target === "string" ? document.querySelectorAll(target) : [target];
+    nodes.forEach(node => {
+      if (!node || !node.style) return;
+      if (Array.isArray(config.opacity)) node.style.opacity = config.opacity[1];
+      if (Array.isArray(config.translateY)) node.style.transform = `translateY(${config.translateY[1]}px)`;
+      if (Array.isArray(config.translateX)) node.style.transform = `translateX(${config.translateX[1]}px)`;
+    });
   });
+  if (typeof config.complete === "function") setTimeout(config.complete, 0);
+}
 
-  // Byline + sub fade
-  anime({ targets: ['#logo-byline','#logo-sub'], opacity:[0,1], translateX:[-8,0], delay: anime.stagger(80, {start:600}), duration:500, easing:'easeOutQuad' });
-  anime({ targets: '#header-score', opacity:[0,1], translateX:[10,0], duration:600, delay:500, easing:'easeOutExpo' });
+function byId(id) { return document.getElementById(id); }
 
-  // Intro headline words slide up
-  anime({
-    targets: '.word-inner', translateY: ['100%', '0%'], opacity:[0,1],
-    delay: anime.stagger(120, {start: 400}), duration: 700, easing: 'easeOutExpo'
+function shuffle(items) {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+function getPool() {
+  if (state.difficulty === "mixta") return FULL_QUESTION_BANK;
+  return FULL_QUESTION_BANK.filter(q => q.difficulty === state.difficulty);
+}
+
+function buildGeneratedQuestionBank() {
+  const questions = [];
+  const add = question => questions.push(makeQuestion(question));
+
+  for (let n = 1; n <= 30; n++) add(makeAlkaneCombustion(n));
+  for (let n = 2; n <= 20; n++) add(makeAlkeneCombustion(n));
+  for (let n = 1; n <= 20; n++) add(makeAlcoholCombustion(n));
+
+  [
+    ["Li", 1], ["Na", 1], ["K", 1], ["Mg", 2], ["Ca", 2], ["Ba", 2], ["Zn", 2],
+    ["Al", 3], ["Fe", 3], ["Cr", 3], ["Ni", 2], ["Co", 2]
+  ].forEach(([metal, valence]) => add(makeMetalHclDisplacement(metal, valence)));
+
+  [
+    ["Na", 1], ["K", 1], ["Li", 1], ["Ag", 1], ["Ca", 2], ["Mg", 2], ["Ba", 2],
+    ["Zn", 2], ["Cu", 2], ["Fe", 2], ["Al", 3], ["Fe", 3]
+  ].forEach(([metal, valence]) => add(makeCarbonateAcid(metal, valence)));
+
+  [
+    ["Mg", 2, "MgO"], ["Ca", 2, "CaO"], ["Ba", 2, "BaO"], ["Zn", 2, "ZnO"],
+    ["Cu", 2, "CuO"], ["Ni", 2, "NiO"], ["Al", 3, "Al2O3"], ["Fe", 3, "Fe2O3"],
+    ["Cr", 3, "Cr2O3"], ["Ti", 4, "TiO2"]
+  ].forEach(([metal, valence, oxide]) => add(makeOxideSynthesis(metal, valence, oxide)));
+
+  [
+    ["Na2CO3", {Na:2, C:1, O:3}, "Na2O", {Na:2, O:1}, "facil"],
+    ["K2CO3", {K:2, C:1, O:3}, "K2O", {K:2, O:1}, "facil"],
+    ["Li2CO3", {Li:2, C:1, O:3}, "Li2O", {Li:2, O:1}, "facil"],
+    ["CaCO3", {Ca:1, C:1, O:3}, "CaO", {Ca:1, O:1}, "medio"],
+    ["MgCO3", {Mg:1, C:1, O:3}, "MgO", {Mg:1, O:1}, "medio"],
+    ["BaCO3", {Ba:1, C:1, O:3}, "BaO", {Ba:1, O:1}, "medio"],
+    ["ZnCO3", {Zn:1, C:1, O:3}, "ZnO", {Zn:1, O:1}, "medio"],
+    ["FeCO3", {Fe:1, C:1, O:3}, "FeO", {Fe:1, O:1}, "medio"],
+    ["CuCO3", {Cu:1, C:1, O:3}, "CuO", {Cu:1, O:1}, "medio"],
+    ["PbCO3", {Pb:1, C:1, O:3}, "PbO", {Pb:1, O:1}, "medio"]
+  ].forEach(([carbonate, carbonateAtoms, oxide, oxideAtoms, difficulty]) => add(makeCarbonateDecomposition(carbonate, carbonateAtoms, oxide, oxideAtoms, difficulty)));
+
+  [
+    ["NaCl", {Na:1, Cl:1}, "NaNO3", {Na:1, N:1, O:3}, 1],
+    ["KCl", {K:1, Cl:1}, "KNO3", {K:1, N:1, O:3}, 1],
+    ["LiCl", {Li:1, Cl:1}, "LiNO3", {Li:1, N:1, O:3}, 1],
+    ["MgCl2", {Mg:1, Cl:2}, "Mg(NO3)2", {Mg:1, N:2, O:6}, 2],
+    ["CaCl2", {Ca:1, Cl:2}, "Ca(NO3)2", {Ca:1, N:2, O:6}, 2],
+    ["BaCl2", {Ba:1, Cl:2}, "Ba(NO3)2", {Ba:1, N:2, O:6}, 2],
+    ["ZnCl2", {Zn:1, Cl:2}, "Zn(NO3)2", {Zn:1, N:2, O:6}, 2],
+    ["CuCl2", {Cu:1, Cl:2}, "Cu(NO3)2", {Cu:1, N:2, O:6}, 2],
+    ["AlCl3", {Al:1, Cl:3}, "Al(NO3)3", {Al:1, N:3, O:9}, 3],
+    ["FeCl3", {Fe:1, Cl:3}, "Fe(NO3)3", {Fe:1, N:3, O:9}, 3]
+  ].forEach(([chloride, chlorideAtoms, nitrate, nitrateAtoms, valence]) => add(makeSilverNitratePrecipitation(chloride, chlorideAtoms, nitrate, nitrateAtoms, valence)));
+
+  return questions;
+}
+
+function makeQuestion({ id, label, topic, difficulty, context, reactants, products, hint, explanation }) {
+  return {
+    id,
+    label,
+    topic,
+    difficulty,
+    context,
+    reactants,
+    products,
+    displayReactants: reactants.map(part => formulaHtml(part.formula)),
+    displayProducts: products.map(part => formulaHtml(part.formula)),
+    hint,
+    explanation
+  };
+}
+
+function formulaHtml(formula) {
+  return formula.replace(/(\d+)/g, "<sub>$1</sub>");
+}
+
+function formulaText(formula) {
+  return formula.replace(/(\d+)/g, n => n);
+}
+
+function makeAlkaneCombustion(n) {
+  const hydrogen = 2 * n + 2;
+  const oddOxygenCoef = 3 * n + 1;
+  const needsDouble = oddOxygenCoef % 2 !== 0;
+  const fuelCoef = needsDouble ? 2 : 1;
+  const oxygenCoef = needsDouble ? oddOxygenCoef : oddOxygenCoef / 2;
+  const co2Coef = needsDouble ? 2 * n : n;
+  const waterCoef = needsDouble ? 2 * (n + 1) : n + 1;
+  const formula = hydrocarbonFormula(n, hydrogen);
+  return {
+    id: `gen-alcano-${n}`,
+    label: `Combustión de ${formulaText(formula)}`,
+    topic: "Combustión",
+    difficulty: n <= 4 ? "facil" : n <= 12 ? "medio" : "reto",
+    context: "Combustión completa de un alcano. Balancea primero carbono, luego hidrógeno y deja el oxígeno para el final.",
+    reactants: [{ coef: fuelCoef, formula, atoms: { C: n, H: hydrogen } }, { coef: oxygenCoef, formula: "O2", atoms: { O: 2 } }],
+    products: [{ coef: co2Coef, formula: "CO2", atoms: { C: 1, O: 2 } }, { coef: waterCoef, formula: "H2O", atoms: { H: 2, O: 1 } }],
+    hint: `El combustible tiene ${n} C y ${hydrogen} H. Eso te guía hacia CO2 y H2O antes de ajustar O2.`,
+    explanation: "En una combustión completa, todo C termina en CO2 y todo H termina en H2O; el coeficiente de O2 se ajusta al final."
+  };
+}
+
+function makeAlkeneCombustion(n) {
+  const hydrogen = 2 * n;
+  const needsDouble = n % 2 !== 0;
+  const fuelCoef = needsDouble ? 2 : 1;
+  const oxygenCoef = needsDouble ? 3 * n : (3 * n) / 2;
+  const co2Coef = needsDouble ? 2 * n : n;
+  const waterCoef = needsDouble ? 2 * n : n;
+  const formula = hydrocarbonFormula(n, hydrogen);
+  return {
+    id: `gen-alqueno-${n}`,
+    label: `Combustión de ${formulaText(formula)}`,
+    topic: "Combustión",
+    difficulty: n <= 5 ? "medio" : "reto",
+    context: "Combustión completa de un alqueno. La estrategia sigue siendo C, H y finalmente O.",
+    reactants: [{ coef: fuelCoef, formula, atoms: { C: n, H: hydrogen } }, { coef: oxygenCoef, formula: "O2", atoms: { O: 2 } }],
+    products: [{ coef: co2Coef, formula: "CO2", atoms: { C: 1, O: 2 } }, { coef: waterCoef, formula: "H2O", atoms: { H: 2, O: 1 } }],
+    hint: `Como hay ${n} carbonos, el CO2 debe seguir esa cantidad. Luego balancea ${hydrogen} hidrógenos con agua.`,
+    explanation: "Los hidrocarburos se balancean más rápido si se deja el oxígeno molecular para el último paso."
+  };
+}
+
+function makeAlcoholCombustion(n) {
+  const hydrogen = 2 * n + 2;
+  const needsDouble = n % 2 !== 0;
+  const fuelCoef = needsDouble ? 2 : 1;
+  const oxygenCoef = needsDouble ? 3 * n : (3 * n) / 2;
+  const co2Coef = needsDouble ? 2 * n : n;
+  const waterCoef = needsDouble ? 2 * (n + 1) : n + 1;
+  const formula = alcoholFormula(n);
+  return {
+    id: `gen-alcohol-${n}`,
+    label: `Combustión de ${formulaText(formula)}`,
+    topic: "Combustión",
+    difficulty: n <= 3 ? "medio" : "reto",
+    context: "Combustión completa de un alcohol. Recuerda que el combustible ya trae un átomo de oxígeno.",
+    reactants: [{ coef: fuelCoef, formula, atoms: { C: n, H: hydrogen, O: 1 } }, { coef: oxygenCoef, formula: "O2", atoms: { O: 2 } }],
+    products: [{ coef: co2Coef, formula: "CO2", atoms: { C: 1, O: 2 } }, { coef: waterCoef, formula: "H2O", atoms: { H: 2, O: 1 } }],
+    hint: "Balancea C y H primero. Al contar oxígeno, no olvides el O que ya está dentro del alcohol.",
+    explanation: "A diferencia de un alcano, el alcohol aporta oxígeno desde los reactivos, por eso cambia el coeficiente necesario de O2."
+  };
+}
+
+function makeMetalHclDisplacement(metal, valence) {
+  const needsDouble = valence % 2 !== 0;
+  const metalCoef = needsDouble ? 2 : 1;
+  const hclCoef = needsDouble ? 2 * valence : valence;
+  const saltCoef = needsDouble ? 2 : 1;
+  const h2Coef = needsDouble ? valence : valence / 2;
+  const saltFormula = `${metal}Cl${valence > 1 ? valence : ""}`;
+  return {
+    id: `gen-desplazamiento-${metal.toLowerCase()}-hcl`,
+    label: `${metal} + ácido clorhídrico`,
+    topic: "Desplazamiento",
+    difficulty: valence === 1 ? "facil" : valence === 2 ? "medio" : "reto",
+    context: "Un metal desplaza al hidrógeno del ácido clorhídrico y forma una sal más hidrógeno gaseoso.",
+    reactants: [{ coef: metalCoef, formula: metal, atoms: { [metal]: 1 } }, { coef: hclCoef, formula: "HCl", atoms: { H: 1, Cl: 1 } }],
+    products: [{ coef: saltCoef, formula: saltFormula, atoms: { [metal]: 1, Cl: valence } }, { coef: h2Coef, formula: "H2", atoms: { H: 2 } }],
+    hint: `La sal tiene ${valence} cloro(s), así que el HCl debe aportar esa cantidad.`,
+    explanation: "En desplazamiento simple, el metal ocupa el lugar del hidrógeno en el ácido y el hidrógeno sale como H2."
+  };
+}
+
+function makeCarbonateAcid(metal, valence) {
+  const carbonateFormula = valence === 1 ? `${metal}2CO3` : valence === 2 ? `${metal}CO3` : `${metal}2(CO3)3`;
+  const chlorideFormula = `${metal}Cl${valence > 1 ? valence : ""}`;
+  const carbonateAtoms = valence === 1 ? { [metal]: 2, C: 1, O: 3 } : valence === 2 ? { [metal]: 1, C: 1, O: 3 } : { [metal]: 2, C: 3, O: 9 };
+  const hclCoef = valence === 3 ? 6 : 2;
+  const chlorideCoef = valence === 1 ? 2 : valence === 2 ? 1 : 2;
+  const co2Coef = valence === 3 ? 3 : 1;
+  const waterCoef = valence === 3 ? 3 : 1;
+  return {
+    id: `gen-carbonato-acido-${metal.toLowerCase()}`,
+    label: `${carbonateFormula} + HCl`,
+    topic: "Ácido-carbonato",
+    difficulty: valence === 1 ? "medio" : "reto",
+    context: "Los carbonatos con ácidos producen sal, dióxido de carbono y agua. La efervescencia viene del CO2.",
+    reactants: [{ coef: 1, formula: carbonateFormula, atoms: carbonateAtoms }, { coef: hclCoef, formula: "HCl", atoms: { H: 1, Cl: 1 } }],
+    products: [{ coef: chlorideCoef, formula: chlorideFormula, atoms: { [metal]: 1, Cl: valence } }, { coef: co2Coef, formula: "CO2", atoms: { C: 1, O: 2 } }, { coef: waterCoef, formula: "H2O", atoms: { H: 2, O: 1 } }],
+    hint: "El ácido siempre aporta 2 H para formar una molécula de agua.",
+    explanation: "El grupo carbonato se transforma en CO2 y H2O; el metal se combina con cloro para formar la sal."
+  };
+}
+
+function makeOxideSynthesis(metal, valence, oxideFormula) {
+  const productAtoms = valence === 2 ? { [metal]: 1, O: 1 } : valence === 3 ? { [metal]: 2, O: 3 } : { [metal]: 1, O: 2 };
+  const coefficients = valence === 2 ? [2, 1, 2] : valence === 3 ? [4, 3, 2] : [1, 1, 1];
+  return {
+    id: `gen-oxido-${metal.toLowerCase()}`,
+    label: `Formación de ${oxideFormula}`,
+    topic: "Síntesis",
+    difficulty: valence === 2 ? "facil" : "medio",
+    context: "Un metal reacciona con oxígeno para formar su óxido. La clave es igualar los oxígenos que vienen como O2.",
+    reactants: [{ coef: coefficients[0], formula: metal, atoms: { [metal]: 1 } }, { coef: coefficients[1], formula: "O2", atoms: { O: 2 } }],
+    products: [{ coef: coefficients[2], formula: oxideFormula, atoms: productAtoms }],
+    hint: "Busca que el número total de oxígenos del producto sea par para poder igualarlo con O2.",
+    explanation: "El oxígeno elemental aparece como O2, por eso muchas síntesis de óxidos requieren duplicar el producto."
+  };
+}
+
+function makeCarbonateDecomposition(carbonate, carbonateAtoms, oxide, oxideAtoms, difficulty) {
+  return {
+    id: `gen-descomposicion-${carbonate.toLowerCase()}`,
+    label: `Descomposición de ${carbonate}`,
+    topic: "Descomposición",
+    difficulty,
+    context: "Al calentarse, muchos carbonatos metálicos se descomponen en óxido metálico y dióxido de carbono.",
+    reactants: [{ coef: 1, formula: carbonate, atoms: carbonateAtoms }],
+    products: [{ coef: 1, formula: oxide, atoms: oxideAtoms }, { coef: 1, formula: "CO2", atoms: { C: 1, O: 2 } }],
+    hint: "El grupo CO3 se reparte como un oxígeno en el óxido y dos oxígenos en CO2.",
+    explanation: "La descomposición conserva el metal en el óxido y libera el carbonato restante como CO2."
+  };
+}
+
+function makeSilverNitratePrecipitation(chloride, chlorideAtoms, nitrate, nitrateAtoms, valence) {
+  return {
+    id: `gen-precipitacion-${chloride.toLowerCase()}`,
+    label: `${chloride} + nitrato de plata`,
+    topic: "Doble sustitución",
+    difficulty: valence === 1 ? "facil" : valence === 2 ? "medio" : "reto",
+    context: "Una sal clorada reacciona con nitrato de plata y forma cloruro de plata, un precipitado blanco.",
+    reactants: [{ coef: 1, formula: chloride, atoms: chlorideAtoms }, { coef: valence, formula: "AgNO3", atoms: { Ag: 1, N: 1, O: 3 } }],
+    products: [{ coef: 1, formula: nitrate, atoms: nitrateAtoms }, { coef: valence, formula: "AgCl", atoms: { Ag: 1, Cl: 1 } }],
+    hint: `Hay ${valence} cloro(s) en la sal inicial, así que se forman ${valence} AgCl.`,
+    explanation: "La doble sustitución intercambia iones: el nitrato acompaña al metal y la plata precipita con cloruro."
+  };
+}
+
+function hydrocarbonFormula(carbons, hydrogens) {
+  const c = carbons === 1 ? "C" : `C${carbons}`;
+  const h = hydrogens === 1 ? "H" : `H${hydrogens}`;
+  return `${c}${h}`;
+}
+
+function alcoholFormula(carbons) {
+  if (carbons === 1) return "CH3OH";
+  return `C${carbons}H${2 * carbons + 1}OH`;
+}
+
+function setActiveButton(setting, value) {
+  document.querySelectorAll(`[data-setting="${setting}"]`).forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.value === String(value));
   });
+}
 
-  // Desc, badges, rules, button cascade
-  anime({ targets: '.intro-desc', opacity:[0,1], translateY:[12,0], duration:600, delay:900, easing:'easeOutQuad' });
-  anime({ targets: '.badge', opacity:[0,1], translateY:[8,0], delay: anime.stagger(80, {start:1100}), duration:400, easing:'easeOutQuad' });
-  anime({ targets: '#intro-rules', opacity:[0,1], translateY:[16,0], duration:600, delay:1500, easing:'easeOutQuad' });
-  anime({ targets: '#btn-start', opacity:[0,1], translateY:[10,0], duration:500, delay:1800, easing:'easeOutBack' });
+document.querySelectorAll("[data-setting]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const setting = btn.dataset.setting;
+    const value = btn.dataset.value;
+    if (setting === "difficulty") state.difficulty = value;
+    if (setting === "roundSize") state.roundSize = Number(value);
+    if (setting === "timed") {
+      state.timed = !state.timed;
+      btn.classList.toggle("active", state.timed);
+      btn.textContent = state.timed ? "Contrarreloj encendido" : "Contrarreloj apagado";
+      btn.dataset.value = String(state.timed);
+      pulse(btn);
+      return;
+    }
+    setActiveButton(setting, value);
+    pulse(btn);
+  });
 });
 
-// ── GAME START ────────────────────────────────────────────────────
+window.addEventListener("load", () => {
+  motion({ targets: "#main-header", opacity: [0,1], translateY: [-18,0], duration: 700, easing: "easeOutExpo" });
+
+  const logoEl = byId("logo-name");
+  const original = logoEl.innerHTML;
+  logoEl.innerHTML = original.replace(/Reactor/, word => word.split("").map(c => `<span class="char">${c}</span>`).join(""));
+  motion({ targets: "#logo-name .char", translateY: [-32,0], opacity: [0,1], delay: animeSafeStagger(55, 180), duration: 620, easing: "easeOutBack" });
+  motion({ targets: ["#logo-byline", "#logo-sub"], opacity: [0,1], translateX: [-8,0], delay: animeSafeStagger(80, 560), duration: 520, easing: "easeOutQuad" });
+  motion({ targets: "#header-stats", opacity: [0,1], translateX: [12,0], duration: 600, delay: 460, easing: "easeOutExpo" });
+  motion({ targets: ".word-inner", translateY: ["100%", "0%"], opacity: [0,1], delay: animeSafeStagger(120, 360), duration: 780, easing: "easeOutExpo" });
+  motion({ targets: ".intro-desc", opacity: [0,1], translateY: [12,0], duration: 620, delay: 850, easing: "easeOutQuad" });
+  motion({ targets: ".badge", opacity: [0,1], translateY: [8,0], delay: animeSafeStagger(70, 1040), duration: 430, easing: "easeOutQuad" });
+  motion({ targets: "#setup-panel", opacity: [0,1], translateY: [18,0], duration: 650, delay: 1250, easing: "easeOutExpo" });
+  motion({ targets: "#beaker", opacity: [0,1], translateY: [24,0], duration: 900, delay: 380, easing: "easeOutBack" });
+  motion({ targets: "#lab-orbit", opacity: [0,1], rotate: [0, 360], duration: 22000, delay: 700, loop: true, easing: "linear" });
+  motion({ targets: ".molecule-dot", scale: [0,1], opacity: [0,1], delay: animeSafeStagger(130, 900), duration: 520, easing: "easeOutBack" });
+  motion({ targets: ".molecule-dot", translateY: [-5,5], direction: "alternate", loop: true, duration: 1700, delay: animeSafeStagger(160, 0), easing: "easeInOutSine" });
+  buildFloatingFormulas();
+});
+
+function buildFloatingFormulas() {
+  const field = byId("formula-field");
+  const formulas = ["H2O", "CO2", "NaCl", "O2", "HCl", "KMnO4", "C6H12O6", "AgCl", "NH3", "CaCO3", "Fe2O3", "CH4"];
+  field.innerHTML = "";
+  formulas.forEach((formula, index) => {
+    const item = document.createElement("span");
+    item.className = "float-formula";
+    item.innerHTML = formulaHtml(formula);
+    item.style.left = `${4 + index * 8}%`;
+    item.style.setProperty("--drift", `${17 + (index % 5) * 3}s`);
+    item.style.setProperty("--side", `${index % 2 ? "-" : ""}${24 + index * 3}px`);
+    item.style.setProperty("--rot", `${-12 + index * 3}deg`);
+    item.style.animationDelay = `${index * -1.7}s`;
+    field.appendChild(item);
+  });
+}
+
+function animeSafeStagger(step, start) {
+  return window.anime ? anime.stagger(step, { start }) : 0;
+}
+
+function pulse(target) {
+  motion({ targets: target, scale: [1, 1.04, 1], duration: 260, easing: "easeOutQuad" });
+}
+
+function quickDemo() {
+  state.difficulty = "mixta";
+  state.roundSize = 6;
+  setActiveButton("difficulty", "mixta");
+  setActiveButton("roundSize", "6");
+  startGame();
+}
+
 function startGame() {
-  anime({
-    targets: '#intro-screen', opacity:[1,0], translateY:[0,-20],
-    duration:400, easing:'easeInQuad',
+  const pool = getPool();
+  const picked = shuffle(pool).slice(0, Math.min(state.roundSize, pool.length));
+  state.questions = picked;
+  state.currentQ = 0;
+  state.score = 0;
+  state.displayedScore = 0;
+  state.hintsUsed = 0;
+  state.correctCount = 0;
+  state.streak = 0;
+  state.maxStreak = 0;
+  state.review = [];
+  state.balancedMemory = new Set();
+  updateHeaderStats();
+  animateBeakerReaction();
+
+  motion({
+    targets: "#intro-screen",
+    opacity: [1,0],
+    translateY: [0,-20],
+    duration: 380,
+    easing: "easeInQuad",
     complete: () => {
-      document.getElementById('intro-screen').style.display='none';
-      document.getElementById('game-screen').style.display='block';
+      byId("intro-screen").classList.remove("active");
+      byId("result-screen").classList.remove("active");
+      byId("game-screen").classList.add("active");
+      byId("game-screen").style.opacity = 1;
       buildProgress();
       loadQuestion();
     }
@@ -315,263 +1374,537 @@ function startGame() {
 }
 
 function buildProgress() {
-  const row = document.getElementById('progress-row');
-  row.innerHTML='';
-  EQUATIONS.forEach((_,i) => {
-    const d=document.createElement('div');
-    d.className='prog-dot'+(i<currentQ?' done':i===currentQ?' active':'');
-    row.appendChild(d);
+  const row = byId("progress-row");
+  row.innerHTML = "";
+  state.questions.forEach((_, i) => {
+    const dot = document.createElement("div");
+    dot.className = "prog-dot" + (i < state.currentQ ? " done" : i === state.currentQ ? " active" : "");
+    row.appendChild(dot);
   });
 }
 
-// ── LOAD QUESTION ─────────────────────────────────────────────────
 function loadQuestion() {
-  answeredThisQ=false; hintUsedThisQ=false; attempts=0;
+  clearTimer();
+  state.answeredThisQ = false;
+  state.hintUsedThisQ = false;
+  state.solutionUsedThisQ = false;
+  state.attempts = 0;
   buildProgress();
-  const q=EQUATIONS[currentQ];
-  document.getElementById('eq-label').textContent=q.label;
-  document.getElementById('eq-context').innerHTML=q.context;
-  document.getElementById('hint-box').className='hint-box';
-  document.getElementById('hint-box').style.opacity=0;
-  document.getElementById('feedback').className='feedback';
-  document.getElementById('feedback').style.opacity=0;
-  document.getElementById('btn-next').style.display='none';
-  document.getElementById('btn-hint').disabled=false;
-  document.getElementById('btn-check').disabled=false;
+
+  const q = currentQuestion();
+  byId("eq-label").textContent = q.label;
+  byId("eq-difficulty").textContent = DIFFICULTY_LABELS[q.difficulty];
+  byId("eq-difficulty").className = `eq-difficulty ${q.difficulty}`;
+  byId("eq-context").innerHTML = q.context;
+  byId("difficulty-chip").textContent = `Dificultad: ${DIFFICULTY_LABELS[state.difficulty]}`;
+  byId("round-chip").textContent = `${state.currentQ + 1}/${state.questions.length}`;
+  byId("hint-box").className = "hint-box";
+  byId("hint-box").style.opacity = 0;
+  byId("learn-box").className = "learn-box";
+  byId("learn-box").style.opacity = 0;
+  byId("feedback").className = "feedback";
+  byId("feedback").style.opacity = 0;
+  byId("btn-next").style.display = "none";
+  byId("btn-solution").style.display = "none";
+  byId("btn-hint").disabled = false;
+  byId("btn-check").disabled = false;
+  byId("btn-reset").disabled = false;
   buildEquation(q);
   updateAtomCounter();
+  startTimerIfNeeded(q);
 
-  // Card entrance
-  const container = document.getElementById('eq-container');
-  container.style.opacity=0;
-  container.style.transform='translateY(24px)';
-  anime({ targets: container, opacity:[0,1], translateY:[24,0], duration:550, easing:'easeOutExpo' });
+  const container = byId("eq-container");
+  container.style.opacity = 0;
+  container.style.transform = "translateY(24px)";
+  motion({ targets: container, opacity: [0,1], translateY: [24,0], duration: 560, easing: "easeOutExpo" });
+  setTimeout(() => motion({ targets: ".atom-card", opacity: [0,1], scale: [0.86,1], delay: animeSafeStagger(40, 0), duration: 360, easing: "easeOutBack" }), 180);
+  setTimeout(() => motion({ targets: ".coef-input", scale: [0,1], opacity: [0,1], delay: animeSafeStagger(55, 0), duration: 420, easing: "easeOutBack" }), 280);
+}
 
-  // Atom cards stagger in
-  setTimeout(() => {
-    anime({ targets: '.atom-card', opacity:[0,1], scale:[0.85,1], delay:anime.stagger(40), duration:350, easing:'easeOutBack' });
-  }, 200);
-
-  // Inputs bounce in
-  setTimeout(() => {
-    anime({ targets: '.coef-input', scale:[0,1], opacity:[0,1], delay:anime.stagger(60), duration:400, easing:'easeOutBack' });
-  }, 300);
+function currentQuestion() {
+  return state.questions[state.currentQ];
 }
 
 function buildEquation(q) {
-  const row=document.getElementById('equation-row');
-  row.innerHTML='';
-  const buildSide=(parts, side, displays) => {
-    parts.forEach((p,i) => {
-      if(i>0){ const plus=document.createElement('span'); plus.className='eq-plus'; plus.textContent='+'; row.appendChild(plus); }
-      const div=document.createElement('div'); div.className='eq-part';
-      const inp=document.createElement('input');
-      inp.type='number'; inp.min=1; inp.max=99;
-      inp.className='coef-input'; inp.id=`coef-${side}-${i}`; inp.placeholder='?';
-      inp.style.opacity=0; inp.style.transform='scale(0)';
-      inp.oninput=updateAtomCounter;
-      inp.onkeydown=e=>{ if(e.key==='Enter') checkAnswer(); };
-      const mol=document.createElement('span'); mol.className='molecule'; mol.innerHTML=displays[i];
-      div.appendChild(inp); div.appendChild(mol); row.appendChild(div);
+  const row = byId("equation-row");
+  row.innerHTML = "";
+  const buildSide = (parts, side, displays) => {
+    parts.forEach((part, i) => {
+      if (i > 0) {
+        const plus = document.createElement("span");
+        plus.className = "eq-plus";
+        plus.textContent = "+";
+        row.appendChild(plus);
+      }
+      const group = document.createElement("div");
+      group.className = "eq-part";
+      const input = document.createElement("input");
+      input.type = "number";
+      input.inputMode = "numeric";
+      input.min = 1;
+      input.max = 99;
+      input.className = "coef-input";
+      input.id = `coef-${side}-${i}`;
+      input.placeholder = "?";
+      input.style.opacity = 0;
+      input.style.transform = "scale(0)";
+      input.addEventListener("input", () => {
+        input.className = "coef-input";
+        updateAtomCounter();
+      });
+      input.addEventListener("keydown", event => {
+        if (event.key === "Enter") checkAnswer();
+      });
+      const mol = document.createElement("span");
+      mol.className = "molecule";
+      mol.innerHTML = displays[i];
+      group.append(input, mol);
+      row.appendChild(group);
     });
   };
-  buildSide(q.reactants,'R',q.displayReactants);
-  const arr=document.createElement('span'); arr.className='eq-arrow'; arr.textContent='→'; row.appendChild(arr);
-  buildSide(q.products,'P',q.displayProducts);
+  buildSide(q.reactants, "R", q.displayReactants);
+  const arrow = document.createElement("span");
+  arrow.className = "eq-arrow";
+  arrow.textContent = "→";
+  row.appendChild(arrow);
+  buildSide(q.products, "P", q.displayProducts);
 }
 
-function getCoef(side,idx){ return parseInt(document.getElementById(`coef-${side}-${idx}`)?.value)||1; }
+function getCoef(side, index) {
+  const raw = byId(`coef-${side}-${index}`)?.value;
+  const value = parseInt(raw, 10);
+  if (!Number.isFinite(value) || value < 1) return 1;
+  return value;
+}
+
+function collectTotals() {
+  const q = currentQuestion();
+  const totals = {};
+  const count = (parts, side) => {
+    parts.forEach((part, i) => {
+      const coef = getCoef(side, i);
+      Object.entries(part.atoms).forEach(([element, amount]) => {
+        if (!totals[element]) totals[element] = { L: 0, R: 0 };
+        totals[element][side === "R" ? "L" : "R"] += coef * amount;
+      });
+    });
+  };
+  count(q.reactants, "R");
+  count(q.products, "P");
+  return totals;
+}
 
 function updateAtomCounter() {
-  const q=EQUATIONS[currentQ], totals={};
-  const count=(parts,side)=>parts.forEach((p,i)=>{
-    const c=getCoef(side,i);
-    Object.entries(p.atoms).forEach(([el,n])=>{
-      if(!totals[el]) totals[el]={L:0,R:0};
-      totals[el][side==='R'?'L':'R']+=c*n;
-    });
-  });
-  count(q.reactants,'R'); count(q.products,'P');
-  const ac=document.getElementById('atom-counter'); ac.innerHTML='';
-  Object.entries(totals).forEach(([el,{L,R}])=>{
-    const balanced=L===R;
-    const card=document.createElement('div');
-    card.className='atom-card '+(balanced?'balanced':'unbalanced');
-    card.innerHTML=`<span class="atom-symbol">${el}</span><div class="atom-counts"><span class="atom-side left">${L}</span><span class="atom-divider">|</span><span class="atom-side right">${R}</span></div>`;
-    ac.appendChild(card);
+  const totals = collectTotals();
+  const container = byId("atom-counter");
+  container.innerHTML = "";
+  Object.entries(totals).forEach(([element, { L, R }]) => {
+    const balanced = L === R;
+    const key = `${state.currentQ}-${element}`;
+    const justBalanced = balanced && !state.balancedMemory.has(key);
+    if (balanced) state.balancedMemory.add(key);
+    else state.balancedMemory.delete(key);
+    const card = document.createElement("div");
+    card.className = `atom-card ${balanced ? "balanced" : "unbalanced"}${justBalanced ? " just-balanced" : ""}`;
+    card.style.opacity = 1;
+    card.innerHTML = `<span class="atom-symbol">${element}</span><div class="atom-counts"><span class="atom-side left">${L}</span><span class="atom-divider">|</span><span class="atom-side right">${R}</span></div>`;
+    container.appendChild(card);
   });
 }
 
 function isBalanced() {
-  const q=EQUATIONS[currentQ], totals={};
-  const count=(parts,side)=>parts.forEach((p,i)=>{
-    const c=getCoef(side,i);
-    Object.entries(p.atoms).forEach(([el,n])=>{
-      if(!totals[el]) totals[el]={L:0,R:0};
-      totals[el][side==='R'?'L':'R']+=c*n;
-    });
-  });
-  count(q.reactants,'R'); count(q.products,'P');
-  return Object.values(totals).every(({L,R})=>L===R);
+  return Object.values(collectTotals()).every(({ L, R }) => L === R);
 }
 
 function checkCoefs() {
-  const q=EQUATIONS[currentQ]; let ok=true;
-  q.reactants.forEach((r,i)=>{ const inp=document.getElementById(`coef-R-${i}`); const v=parseInt(inp.value)||1; const good=v===r.coef; inp.className='coef-input '+(good?'correct':'wrong'); if(!good) ok=false; });
-  q.products.forEach((p,i)=>{ const inp=document.getElementById(`coef-P-${i}`); const v=parseInt(inp.value)||1; const good=v===p.coef; inp.className='coef-input '+(good?'correct':'wrong'); if(!good) ok=false; });
+  const q = currentQuestion();
+  let ok = true;
+  q.reactants.forEach((part, i) => {
+    const input = byId(`coef-R-${i}`);
+    const good = getCoef("R", i) === part.coef;
+    input.className = `coef-input ${good ? "correct" : "wrong"}`;
+    if (!good) ok = false;
+  });
+  q.products.forEach((part, i) => {
+    const input = byId(`coef-P-${i}`);
+    const good = getCoef("P", i) === part.coef;
+    input.className = `coef-input ${good ? "correct" : "wrong"}`;
+    if (!good) ok = false;
+  });
   return ok;
 }
 
 function buildBalancedEq(q) {
-  const r=q.reactants.map((p,i)=>(p.coef>1?p.coef:'')+q.displayReactants[i].replace(/<[^>]*>/g,'')).join(' + ');
-  const p=q.products.map((p,i)=>(p.coef>1?p.coef:'')+q.displayProducts[i].replace(/<[^>]*>/g,'')).join(' + ');
-  return r+' → '+p;
+  const left = q.reactants.map((part, i) => `${part.coef > 1 ? part.coef : ""}${stripTags(q.displayReactants[i])}`).join(" + ");
+  const right = q.products.map((part, i) => `${part.coef > 1 ? part.coef : ""}${stripTags(q.displayProducts[i])}`).join(" + ");
+  return `${left} → ${right}`;
 }
 
-// ── CHECK ANSWER ──────────────────────────────────────────────────
+function stripTags(text) {
+  return text.replace(/<[^>]*>/g, "");
+}
+
 function checkAnswer() {
-  if(answeredThisQ) return;
-  attempts++;
-  const balanced=isBalanced(), correctCoefs=checkCoefs();
-  const fb=document.getElementById('feedback');
+  if (state.answeredThisQ) return;
+  state.attempts++;
+  const balanced = isBalanced();
+  const correctCoefs = checkCoefs();
+  const feedback = byId("feedback");
 
-  if(balanced && correctCoefs) {
-    answeredThisQ=true; correctCount++;
-    const pts=hintUsedThisQ?60:(attempts===1?100:40);
-    score+=pts;
-
-    // Animate score count up
-    anime({ targets: {val: displayedScore}, val: score, round:1, duration:800, easing:'easeOutExpo',
-      update: function(a) { displayedScore=Math.round(a.animatables[0].target.val); document.getElementById('score-display').textContent=displayedScore; }
-    });
-
-    fb.className='feedback show ok'; fb.style.opacity=0;
-    fb.innerHTML=`✓ ¡Balanceada correctamente! +${pts} puntos<br>La ley de conservación de la masa se cumple: el número de átomos de cada elemento es igual en reactivos y productos.<div class="eq-balanced">${buildBalancedEq(EQUATIONS[currentQ])}</div>`;
-    anime({ targets: fb, opacity:[0,1], translateY:[8,0], duration:400, easing:'easeOutQuad' });
-
-    // Inputs pulse green
-    anime({ targets: '.coef-input.correct', scale:[1,1.12,1], duration:500, easing:'easeOutElastic(1,.5)', delay:anime.stagger(60) });
-
-    document.getElementById('btn-next').style.display='inline-block';
-    document.getElementById('btn-next').style.opacity=0;
-    anime({ targets: '#btn-next', opacity:[0,1], translateX:[-10,0], duration:400, delay:300, easing:'easeOutQuad' });
-    document.getElementById('btn-check').disabled=true;
-    document.querySelectorAll('.coef-input').forEach(inp=>inp.disabled=true);
-
-    spawnParticles();
-
+  if (balanced && correctCoefs) {
+    finishQuestion(true);
   } else {
-    fb.className='feedback show fail'; fb.style.opacity=0;
-    const unbalanced=[];
-    document.getElementById('atom-counter').querySelectorAll('.atom-card.unbalanced .atom-symbol').forEach(el=>unbalanced.push(el.textContent));
-    fb.innerHTML=`✗ Aún no está balanceada. Elementos desbalanceados: <strong>${unbalanced.join(', ')}</strong>. Observa el contador de átomos y ajusta los coeficientes.`;
-    anime({ targets: fb, opacity:[0,1], translateY:[8,0], duration:400, easing:'easeOutQuad' });
-
-    // Shake wrong inputs
-    anime({ targets: '.coef-input.wrong', translateX:[-6,6,-4,4,-2,2,0], duration:400, easing:'easeInOutSine' });
-
-    // Shake container
-    anime({ targets: '#eq-container', translateX:[-8,8,-5,5,0], duration:350, easing:'easeInOutSine' });
+    const unbalanced = [];
+    byId("atom-counter").querySelectorAll(".atom-card.unbalanced .atom-symbol").forEach(el => unbalanced.push(el.textContent));
+    feedback.className = "feedback show fail";
+    feedback.style.opacity = 0;
+    feedback.innerHTML = `Aún no está balanceada. Elementos desbalanceados: <strong>${unbalanced.join(", ") || "revisa coeficientes mínimos"}</strong>. Ajusta los coeficientes y mira el contador.`;
+    motion({ targets: feedback, opacity: [0,1], translateY: [8,0], duration: 380, easing: "easeOutQuad" });
+    motion({ targets: ".coef-input.wrong", translateX: [-6,6,-4,4,-2,2,0], duration: 420, easing: "easeInOutSine" });
+    motion({ targets: "#eq-container", translateX: [-8,8,-5,5,0], duration: 360, easing: "easeInOutSine" });
+    state.streak = 0;
+    updateHeaderStats();
+    if (state.attempts >= 2) {
+      byId("btn-solution").style.display = "inline-block";
+      motion({ targets: "#btn-solution", opacity: [0,1], translateX: [-8,0], duration: 300, easing: "easeOutQuad" });
+    }
   }
 }
 
-// ── PARTICLES ─────────────────────────────────────────────────────
-function spawnParticles() {
-  const symbols=['⚗️','✨','⚡','🧪','💚','✓'];
-  for(let i=0;i<12;i++) {
-    const el=document.createElement('div');
-    el.className='particle';
-    el.textContent=symbols[Math.floor(Math.random()*symbols.length)];
-    el.style.left=Math.random()*100+'vw';
-    el.style.top='60vh';
-    document.body.appendChild(el);
-    anime({
-      targets: el,
-      translateY: [0, -(150+Math.random()*200)],
-      translateX: [(Math.random()-0.5)*120],
-      rotate: [0, (Math.random()-0.5)*720],
-      opacity: [1,0],
-      scale: [1, 0.3+Math.random()*0.7],
-      duration: 1000+Math.random()*800,
-      delay: Math.random()*300,
-      easing: 'easeOutExpo',
-      complete: ()=>el.remove()
-    });
+function finishQuestion(correct) {
+  clearTimer();
+  const q = currentQuestion();
+  state.answeredThisQ = true;
+  byId("btn-check").disabled = true;
+  byId("btn-hint").disabled = true;
+  byId("btn-reset").disabled = true;
+  document.querySelectorAll(".coef-input").forEach(input => input.disabled = true);
+
+  let points = 0;
+  if (correct) {
+    const difficultyBonus = q.difficulty === "reto" ? 25 : q.difficulty === "medio" ? 10 : 0;
+    const base = state.solutionUsedThisQ ? 20 : state.hintUsedThisQ ? 60 : state.attempts === 1 ? 100 : 40;
+    const timeBonus = state.timed ? Math.max(0, state.timeLeft) : 0;
+    state.streak++;
+    state.maxStreak = Math.max(state.maxStreak, state.streak);
+    const streakBonus = Math.min(30, (state.streak - 1) * 10);
+    points = base + difficultyBonus + timeBonus + streakBonus;
+    state.correctCount++;
+    state.score += points;
+    animateScore();
+    showSuccess(points, q);
+    reactionBurst();
+  } else {
+    state.streak = 0;
+    showTimeout(q);
   }
+
+  state.review.push({
+    label: q.label,
+    topic: q.topic,
+    correct,
+    points,
+    equation: buildBalancedEq(q)
+  });
+  updateHeaderStats();
+  showLearning(q);
+  byId("btn-next").style.display = "inline-block";
+  byId("btn-next").style.opacity = 0;
+  motion({ targets: "#btn-next", opacity: [0,1], translateX: [-10,0], duration: 380, delay: 180, easing: "easeOutQuad" });
 }
 
-// ── HINT ─────────────────────────────────────────────────────────
+function showSuccess(points, q) {
+  const feedback = byId("feedback");
+  feedback.className = "feedback show ok";
+  feedback.style.opacity = 0;
+  feedback.innerHTML = `Balanceada correctamente. +${points} puntos.<br>La ley de conservación de la masa se cumple: cada elemento aparece con la misma cantidad de átomos en reactivos y productos.<div class="eq-balanced">${buildBalancedEq(q)}</div>`;
+  motion({ targets: feedback, opacity: [0,1], translateY: [8,0], duration: 420, easing: "easeOutQuad" });
+  motion({ targets: ".coef-input.correct", scale: [1,1.12,1], duration: 520, delay: animeSafeStagger(55, 0), easing: "easeOutElastic(1,.5)" });
+}
+
+function showTimeout(q) {
+  const feedback = byId("feedback");
+  feedback.className = "feedback show fail";
+  feedback.style.opacity = 0;
+  feedback.innerHTML = `Tiempo agotado. La ecuación correcta era:<div class="eq-balanced">${buildBalancedEq(q)}</div>`;
+  fillSolution(q);
+  motion({ targets: feedback, opacity: [0,1], translateY: [8,0], duration: 420, easing: "easeOutQuad" });
+}
+
+function showLearning(q) {
+  const box = byId("learn-box");
+  box.className = "learn-box show";
+  box.style.opacity = 0;
+  box.innerHTML = `<strong>Concepto clave:</strong> ${q.explanation}`;
+  motion({ targets: box, opacity: [0,1], translateY: [8,0], duration: 420, delay: 120, easing: "easeOutQuad" });
+}
+
 function showHint() {
-  if(hintUsedThisQ) return;
-  hintUsedThisQ=true; hintsUsed++;
-  document.getElementById('btn-hint').disabled=true;
-  const hb=document.getElementById('hint-box');
-  hb.className='hint-box show'; hb.style.opacity=0;
-  hb.innerHTML='<strong>💡 Pista:</strong> '+EQUATIONS[currentQ].hint;
-  anime({ targets: hb, opacity:[0,1], translateY:[-8,0], scaleY:[0.8,1], duration:400, easing:'easeOutBack' });
+  if (state.hintUsedThisQ || state.answeredThisQ) return;
+  state.hintUsedThisQ = true;
+  state.hintsUsed++;
+  byId("btn-hint").disabled = true;
+  const box = byId("hint-box");
+  box.className = "hint-box show";
+  box.style.opacity = 0;
+  box.innerHTML = `<strong>Pista:</strong> ${currentQuestion().hint}`;
+  motion({ targets: box, opacity: [0,1], translateY: [-8,0], scaleY: [0.82,1], duration: 420, easing: "easeOutBack" });
+}
+
+function revealSolution() {
+  if (state.answeredThisQ) return;
+  state.solutionUsedThisQ = true;
+  fillSolution(currentQuestion());
+  updateAtomCounter();
+  checkCoefs();
+  finishQuestion(true);
+}
+
+function fillSolution(q) {
+  q.reactants.forEach((part, i) => {
+    byId(`coef-R-${i}`).value = part.coef;
+  });
+  q.products.forEach((part, i) => {
+    byId(`coef-P-${i}`).value = part.coef;
+  });
 }
 
 function resetInputs() {
-  document.querySelectorAll('.coef-input').forEach(inp=>{ inp.value=''; inp.className='coef-input'; });
+  if (state.answeredThisQ) return;
+  document.querySelectorAll(".coef-input").forEach(input => {
+    input.value = "";
+    input.className = "coef-input";
+  });
   updateAtomCounter();
 }
 
-// ── NEXT QUESTION ─────────────────────────────────────────────────
 function nextQuestion() {
-  anime({
-    targets: '#eq-container', opacity:[1,0], translateX:[0,-40], duration:300, easing:'easeInQuad',
-    complete: () => { currentQ++; if(currentQ>=EQUATIONS.length){ showResult(); } else { loadQuestion(); } }
-  });
-}
-
-// ── RESULT ────────────────────────────────────────────────────────
-function showResult() {
-  document.getElementById('game-screen').style.display='none';
-  const rs=document.getElementById('result-screen');
-  rs.style.display='block';
-
-  let big,tagline,msg;
-  if(correctCount===6){ big='¡Per<span>fec</span>to!'; tagline='Maestro del balance'; msg='Balanceaste las 6 ecuaciones. Dominas la conservación de la masa y las reacciones redox y ácido-base. El Dr. Morales te contrataría.'; }
-  else if(correctCount>=4){ big='¡Muy<br><span>bien</span>!'; tagline='Buen químico'; msg='Sólido resultado. Repasa las ecuaciones redox más complejas (KMnO₄) y dominarás el tema completamente.'; }
-  else if(correctCount>=2){ big='¡Ca<span>si</span>!'; tagline='Sigue practicando'; msg='Tienes las bases. Recuerda: balancea primero los elementos que aparecen en menos moléculas, deja H y O para el final.'; }
-  else{ big='A re<span>pa</span>sar'; tagline='El laboratorio te espera'; msg='Las ecuaciones redox son complejas. Revisa el método de cambio de número de oxidación y vuelve a intentarlo.'; }
-
-  document.getElementById('r-big').innerHTML=big;
-  document.getElementById('r-tagline').textContent=tagline;
-  document.getElementById('r-msg').textContent=msg.replace(/<[^>]*>/g,'');
-
-  // Big title drops in
-  anime({ targets: '#r-big', opacity:[0,1], translateY:[-40,0], duration:700, easing:'easeOutElastic(1,.6)', delay:100 });
-  anime({ targets: '#r-tagline', opacity:[0,1], duration:500, delay:500, easing:'easeOutQuad' });
-
-  // Cards stagger up
-  anime({ targets: ['.r-card'], opacity:[0,1], translateY:[20,0], delay:anime.stagger(120,{start:600}), duration:500, easing:'easeOutBack' });
-
-  // Score counts up
-  let displayed=0;
-  anime({ targets:{val:0}, val:score, round:1, duration:1200, delay:700, easing:'easeOutExpo',
-    update: a=>{ displayed=Math.round(a.animatables[0].target.val); document.getElementById('r-score').textContent=displayed; }
-  });
-  document.getElementById('r-correct').textContent=correctCount+'/6';
-  document.getElementById('r-hints').textContent=hintsUsed;
-
-  anime({ targets: '#r-msg', opacity:[0,1], translateY:[8,0], duration:500, delay:1100, easing:'easeOutQuad' });
-  anime({ targets: '#btn-restart', opacity:[0,1], translateY:[10,0], duration:500, delay:1300, easing:'easeOutBack' });
-
-  // Confetti if good score
-  if(correctCount>=4) setTimeout(()=>{ for(let i=0;i<3;i++) setTimeout(spawnParticles, i*400); }, 800);
-}
-
-// ── RESTART ───────────────────────────────────────────────────────
-function restartGame() {
-  currentQ=0; score=0; hintsUsed=0; correctCount=0; displayedScore=0;
-  document.getElementById('score-display').textContent='0';
-  anime({
-    targets: '#result-screen', opacity:[1,0], translateY:[0,20], duration:350, easing:'easeInQuad',
+  motion({
+    targets: "#eq-container",
+    opacity: [1,0],
+    translateX: [0,-42],
+    duration: 300,
+    easing: "easeInQuad",
     complete: () => {
-      document.getElementById('result-screen').style.display='none';
-      document.getElementById('game-screen').style.display='block';
-      buildProgress(); loadQuestion();
+      state.currentQ++;
+      if (state.currentQ >= state.questions.length) showResult();
+      else loadQuestion();
+    }
+  });
+}
+
+function animateScore() {
+  const start = state.displayedScore;
+  motion({
+    targets: { val: start },
+    val: state.score,
+    round: 1,
+    duration: 780,
+    easing: "easeOutExpo",
+    update: animation => {
+      const value = animation.animatables ? animation.animatables[0].target.val : state.score;
+      state.displayedScore = Math.round(value);
+      byId("score-display").textContent = state.displayedScore;
+    }
+  });
+  if (!window.anime) {
+    state.displayedScore = state.score;
+    byId("score-display").textContent = state.score;
+  }
+}
+
+function updateHeaderStats() {
+  byId("score-display").textContent = state.displayedScore;
+  byId("streak-display").textContent = state.streak;
+}
+
+function startTimerIfNeeded(q) {
+  if (!state.timed) {
+    const chip = byId("timer-chip");
+    chip.textContent = "Sin tiempo";
+    chip.classList.remove("timer-active", "warn");
+    byId("timer-track").classList.remove("active", "warn");
+    byId("timer-fill").style.width = "100%";
+    return;
+  }
+  const seconds = q.difficulty === "reto" ? 100 : q.difficulty === "medio" ? 80 : 65;
+  state.timeLeft = seconds;
+  state.timerTotal = seconds;
+  byId("timer-track").classList.add("active");
+  byId("timer-track").classList.remove("warn");
+  renderTimer();
+  state.timer = setInterval(() => {
+    state.timeLeft--;
+    renderTimer();
+    if (state.timeLeft <= 0) {
+      clearTimer();
+      finishQuestion(false);
+    }
+  }, 1000);
+}
+
+function renderTimer() {
+  const chip = byId("timer-chip");
+  const percent = state.timerTotal ? Math.max(0, (state.timeLeft / state.timerTotal) * 100) : 100;
+  chip.textContent = `${state.timeLeft}s`;
+  chip.classList.add("timer-active");
+  chip.classList.toggle("warn", state.timeLeft <= 15);
+  byId("timer-fill").style.width = `${percent}%`;
+  byId("timer-track").classList.toggle("warn", state.timeLeft <= 15);
+  if (state.timeLeft <= 15) pulse(chip);
+}
+
+function clearTimer() {
+  if (state.timer) clearInterval(state.timer);
+  state.timer = null;
+}
+
+function reactionBurst() {
+  const flash = byId("reaction-flash");
+  motion({ targets: flash, opacity: [0,1,0], duration: 580, easing: "easeOutQuad" });
+  spawnParticles();
+  animateBeakerReaction();
+  motion({ targets: ".liquid", scaleY: [1,1.04,1], duration: 520, easing: "easeOutElastic(1,.6)" });
+}
+
+function animateBeakerReaction() {
+  const beaker = byId("beaker");
+  if (!beaker) return;
+  beaker.classList.remove("is-reacting");
+  void beaker.offsetWidth;
+  beaker.classList.add("is-reacting");
+  setTimeout(() => beaker.classList.remove("is-reacting"), 950);
+}
+
+function spawnParticles() {
+  const symbols = ["H", "O", "Na", "Cl", "CO2", "H2O", "+", "✓"];
+  for (let i = 0; i < 18; i++) {
+    const el = document.createElement("div");
+    el.className = "particle";
+    el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+    el.style.left = `${35 + Math.random() * 30}vw`;
+    el.style.top = `${54 + Math.random() * 16}vh`;
+    el.style.color = ["#d94f28", "#167b75", "#2d6a4f", "#e2a72e"][Math.floor(Math.random() * 4)];
+    document.body.appendChild(el);
+    motion({
+      targets: el,
+      translateY: [0, -(140 + Math.random() * 210)],
+      translateX: [(Math.random() - 0.5) * 220],
+      rotate: [0, (Math.random() - 0.5) * 720],
+      opacity: [1,0],
+      scale: [1, 0.35 + Math.random() * 0.75],
+      duration: 1000 + Math.random() * 900,
+      delay: Math.random() * 260,
+      easing: "easeOutExpo",
+      complete: () => el.remove()
+    });
+    if (!window.anime) setTimeout(() => el.remove(), 1200);
+  }
+}
+
+function showResult() {
+  clearTimer();
+  byId("game-screen").classList.remove("active");
+  byId("result-screen").classList.add("active");
+  byId("result-screen").style.opacity = 1;
+
+  const total = state.questions.length;
+  const ratio = state.correctCount / total;
+  let big, tagline, msg;
+  if (ratio === 1) {
+    big = "Perfecto<span>.</span>";
+    tagline = "Maestría de laboratorio";
+    msg = "Balanceaste toda la ronda. Conservación de la masa, coeficientes y criterio químico trabajando juntos.";
+  } else if (ratio >= 0.75) {
+    big = "Muy <span>bien</span>";
+    tagline = "Buen químico";
+    msg = "Resultado sólido. Ya puedes explicar por qué los coeficientes cambian la cantidad de moléculas, no las fórmulas.";
+  } else if (ratio >= 0.45) {
+    big = "Casi<span>.</span>";
+    tagline = "Hay reacción";
+    msg = "Tienes la base. Para mejorar: balancea primero los elementos que aparecen en menos compuestos y deja H/O para el final.";
+  } else {
+    big = "A repasar<span>.</span>";
+    tagline = "Nuevo intento recomendado";
+    msg = "Las ecuaciones retadoras necesitan método. Mira el contador de átomos como mapa: si un número sube en un lado, debe compensarse en el otro.";
+  }
+
+  byId("r-big").innerHTML = big;
+  byId("r-tagline").textContent = tagline;
+  byId("r-msg").textContent = msg;
+  byId("r-correct").textContent = `${state.correctCount}/${total}`;
+  byId("r-hints").textContent = state.hintsUsed;
+  byId("r-streak").textContent = state.maxStreak;
+  renderMedals(ratio);
+  renderReview();
+
+  motion({ targets: "#r-big", opacity: [0,1], translateY: [-40,0], duration: 740, delay: 80, easing: "easeOutElastic(1,.6)" });
+  motion({ targets: "#r-tagline", opacity: [0,1], duration: 520, delay: 460, easing: "easeOutQuad" });
+  motion({ targets: ".r-card", opacity: [0,1], translateY: [20,0], delay: animeSafeStagger(105, 560), duration: 520, easing: "easeOutBack" });
+  motion({
+    targets: { val: 0 },
+    val: state.score,
+    round: 1,
+    duration: 1200,
+    delay: 660,
+    easing: "easeOutExpo",
+    update: animation => {
+      const value = animation.animatables ? animation.animatables[0].target.val : state.score;
+      byId("r-score").textContent = Math.round(value);
+    }
+  });
+  if (!window.anime) byId("r-score").textContent = state.score;
+  motion({ targets: "#r-msg", opacity: [0,1], translateY: [8,0], duration: 520, delay: 980, easing: "easeOutQuad" });
+  motion({ targets: "#medal-row", opacity: [0,1], translateY: [8,0], duration: 520, delay: 1060, easing: "easeOutQuad" });
+  motion({ targets: ".medal", opacity: [0,1], translateY: [14,0], scale: [0.9,1], delay: animeSafeStagger(90, 1120), duration: 440, easing: "easeOutBack" });
+  motion({ targets: "#review-list", opacity: [0,1], translateY: [8,0], duration: 520, delay: 1220, easing: "easeOutQuad" });
+  motion({ targets: "#btn-restart", opacity: [0,1], translateY: [10,0], duration: 520, delay: 1250, easing: "easeOutBack" });
+  if (ratio >= 0.75) setTimeout(() => { spawnParticles(); setTimeout(spawnParticles, 360); }, 720);
+}
+
+function renderMedals(ratio) {
+  const medals = [];
+  if (ratio === 1) medals.push(["M", "Balance perfecto"]);
+  if (state.hintsUsed === 0) medals.push(["P", "Sin pistas"]);
+  if (state.maxStreak >= 4) medals.push(["R", "Racha fuerte"]);
+  if (state.timed && state.correctCount >= Math.ceil(state.questions.length * 0.7)) medals.push(["T", "Buen pulso"]);
+  if (state.score >= state.questions.length * 100) medals.push(["Q", "Químico preciso"]);
+  if (!medals.length) medals.push(["L", "Laboratorio activo"]);
+
+  const row = byId("medal-row");
+  row.innerHTML = "";
+  medals.slice(0, 5).forEach(([mark, text]) => {
+    const medal = document.createElement("div");
+    medal.className = "medal";
+    medal.style.opacity = 0;
+    medal.innerHTML = `<span class="medal-mark">${mark}</span><span class="medal-text">${text}</span>`;
+    row.appendChild(medal);
+  });
+}
+
+function renderReview() {
+  const list = byId("review-list");
+  list.innerHTML = "";
+  state.review.forEach((item, index) => {
+    const row = document.createElement("div");
+    row.className = "review-item";
+    row.innerHTML = `<div class="review-tag">${index + 1}. ${item.topic}</div><div><div class="review-title">${item.label}</div><div class="eq-balanced">${item.equation}</div></div><div class="review-points">${item.correct ? "+" + item.points : "0"}</div>`;
+    list.appendChild(row);
+  });
+}
+
+function restartGame() {
+  motion({
+    targets: "#result-screen",
+    opacity: [1,0],
+    translateY: [0,20],
+    duration: 360,
+    easing: "easeInQuad",
+    complete: () => {
+      byId("result-screen").classList.remove("active");
+      byId("intro-screen").classList.add("active");
+      byId("intro-screen").style.opacity = 1;
+      byId("setup-panel").style.opacity = 1;
     }
   });
 }
